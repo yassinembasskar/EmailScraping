@@ -45,15 +45,15 @@
                 <p>the links that did not show up cannot be scrapped</p>
             </div>
             {%if count_emails|string|int > 0 %}
-            <a href="{{ url_for('download_excel', filename=action_id|string ~ '.xlsx') }}" download="the_excel">
+            <a href="{{ url_for('download_excel', filename=result) }}" download="the_excel">
                 <button type="button">Download</button>
             </a>
             {%endif%}
             </div>
-            <form class="seperator" action="" method="post">
-                <textarea required name="seperator_format" id="seperator_format" placeholder="Enter the emails format in html ..."></textarea>
+            <form class="seperator" action="advanced_search" method="post">
+                <textarea name="seperator_format" id="seperator_format" placeholder="Enter the emails format in html ..."></textarea>
                 <div class="seperator_input">
-                    <input placeholder="Enter the Email ..." autocomplete="off" required type="text" name="excel_read" id="excel_read">
+                    <input placeholder="Enter the Email ..." autocomplete="off" type="text" name="excel_read" id="excel_read">
                     <button onclick="show_details()"  class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></button>
                 </div>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">

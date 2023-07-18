@@ -44,8 +44,6 @@ def scrapp_website(url):
     driver = webdriver.Chrome()
     driver.implicitly_wait(20)
     driver.get(url)
-    js = "document.getElementById('page_size').options[1].text ='1000'"
-    driver.execute_script(js)
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()

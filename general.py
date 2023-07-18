@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from werkzeug.security import generate_password_hash, check_password_hash
 import secrets, requests, datetime, os
 import pymysql
 from config import get_db_connection
@@ -56,7 +57,7 @@ def process_login():
         session['error'] = error 
         return redirect(url_for('login'))
     else:
-        if (password != row[3]):
+        if check_password_hash(row[3], password):
             error = 'The password you entered is incorrect'
             session['error'] = error 
             return redirect(url_for('login'))
@@ -99,7 +100,7 @@ def process_signup():
     else:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("INSERT INTO user (USER_EMAIL, USER_NAME, USER_PASSWORD) VALUES (%s, %s, %s)", (email, username, password))
+        cur.execute("INSERT INTO user (USER_EMAIL, USER_NAME, USER_PASSWORD) VALUES (%s, %s, %s)", (email, username, generate_password_hash(password)))
         conn.commit()
         cur.execute("SELECT * FROM user WHERE USER_EMAIL = %s and USER_NAME = %s", (email,username))
         row = cur.fetchone()
@@ -133,17 +134,18 @@ def process_onelink_action():
     emails = scrapp_website(url)
     count_emails = len(emails)
     id = session['id']
+    conn = get_db_connection()
+    cur = conn.cursor()
+
     current_date = datetime.date.today()
     formatted_date = current_date.strftime("%d-%m-%Y")
     current_time = datetime.datetime.now().time()
     formatted_time = current_time.strftime("%H:%M")
-    conn = get_db_connection()
-    cur = conn.cursor()
 
-    cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_SEPARATOR, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, NULL, %s, 'mono_link')", (id, formatted_date, formatted_time, url))
+    cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'mono_link')", (id, formatted_date, formatted_time, url))
     conn.commit()
     
-    cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_timE = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,url))
+    cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_TIME = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,url))
     action_id = cur.fetchone()[0]
 
     cur.execute("INSERT INTO URLS (ACTION_ID, USER_ID, URL_LINK, URL_EMAILS) VALUES (%s, %s, %s, %s)", (action_id, session['id'], url, count_emails))
@@ -153,10 +155,10 @@ def process_onelink_action():
     conn.close()
     if count_emails > 0:
 
-        convert_to_excel(action_id,emails,url)
+        result_path = convert_to_excel(action_id,emails,url)
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("UPDATE action SET ACTION_RESULT = 'results/%s.xlsx' WHERE ACTION_ID = %s", (action_id, action_id))
+        cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (result_path, action_id))
         conn.commit()
         cur.close()
         conn.close()
@@ -217,7 +219,7 @@ def process_bulktext_action():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_SEPARATOR, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, NULL, %s, 'bulk_text')", (id, formatted_date, formatted_time, input))
+        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, NULL, %s, 'bulk_text')", (id, formatted_date, formatted_time, input))
         conn.commit()
             
         cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_timE = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,input))
@@ -311,7 +313,8 @@ def result():
         emails = request.args.getlist('emails')
         zipped_data = list(zip(urls, emails))
         type_result = request.args.get('type_result')
-        return render_template('result.html', action_id = action_id, count_emails=count_emails, heading=heading, zipped_data=zipped_data, type_result = type_result , username=username, email=email, id=id, error=error)
+        result = request.args.get('result')
+        return render_template('result.html', action_id = action_id, result=result, count_emails=count_emails, heading=heading, zipped_data=zipped_data, type_result = type_result , username=username, email=email, id=id, error=error)
     else:
         return redirect(url_for('logout'))
 
@@ -322,11 +325,12 @@ def process_result(action_id):
     cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (action_id))
     row = cur.fetchone()
     user_id = row[1]
+    result = row[4]
     if user_id != session['id']:
         return redirect(url_for(one_link))
-    if row[7] == 'mono_link':
+    if row[6] == 'mono_link':
         type_result = 'mono_link'
-        urls = row[6]
+        urls = row[5]
         cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
         row = cur.fetchone()
         emails = row[4]
@@ -335,7 +339,7 @@ def process_result(action_id):
             heading = '0 out of 1 that has emails'
         else :
             heading = '1 out of 1 that has emails'
-    elif row[7] == 'bulk_text':
+    elif row[6] == 'bulk_text':
         type_result = 'bulk_text'
         cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
         rows = cur.fetchall()
@@ -351,7 +355,7 @@ def process_result(action_id):
         heading = str(i) + ' out of ' + str(len(emails)) + ' that has emails'
         cur.close()
         conn.close()
-    return redirect(url_for('result',action_id=action_id, heading=heading, count_emails = count_emails, emails=emails, urls=urls , type_result=type_result))
+    return redirect(url_for('result',action_id=action_id, result = result, heading=heading, count_emails = count_emails, emails=emails, urls=urls , type_result=type_result))
     
     
         
