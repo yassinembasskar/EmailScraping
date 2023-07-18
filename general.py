@@ -27,11 +27,6 @@ def check_connection():
     except Exception as e:
         return f'Error: {str(e)}'
 
-def zip_lists(list1, list2):
-    return zip(list1, list2)
-
-app.jinja_env.filters['zip_lists'] = zip_lists
-
 @app.route('/login')
 def login():
     error = session.pop('error', '')
@@ -366,10 +361,8 @@ def process_result(action_id):
 
 @app.route('/download_excel/<filename>')
 def download_excel(filename):
-
-    folder = 'results/'
-    full_path = folder + filename
-
+    
+    full_path = filename
     return send_file(full_path, as_attachment=True)
 
 if __name__ == '__main__':

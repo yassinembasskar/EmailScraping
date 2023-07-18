@@ -41,12 +41,15 @@ http://www.narg.org.uk/people-and-partners/staff-directory/ (not secure but good
 '''
 
 def scrapp_website(url):
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(20)
-    driver.get(url)
-    html_content = driver.find_element(By.TAG_NAME, "body")
-    body = html_content.get_attribute("innerHTML")
-    driver.quit()
+    try:
+        driver = webdriver.Chrome()
+        driver.get(url)
+        driver.implicitly_wait(10)
+        html_content = driver.find_element(By.TAG_NAME, "body")
+        body = html_content.get_attribute("innerHTML")
+        driver.quit()
+    except:
+        body = 'failed'
     emails = set()
     pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
     for match in re.finditer(pattern, body):

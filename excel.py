@@ -1,4 +1,4 @@
-import openpyxl
+import openpyxl, datetime
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter, column_index_from_string
 
@@ -40,3 +40,4 @@ def convert_bulk_to_excel(action_id,emails,urls):
     file_name = file_name[:file_name.find('/')]
     workbook.save('results/'+file_name+str(action_id)+'.xlsx')
     return 'results/'+file_name+str(action_id)+'.xlsx'
+
