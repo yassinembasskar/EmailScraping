@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.jpg') }}" type="image/jpg">
+
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="/login">
+            <h1>Email Scrapper</h1>
+        </a>
+        <div class="navbar-toggler" id="navbar-toggler" onclick="navAction();"></div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/signup">Sign Up</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section class="container">
+        <div class="title">
+            <h1>Sign Up</h1>
+        </div>
+        <div class="form_container signup_container">
+            <form class="signup_form" action="{{ url_for('process_signup') }}" method="post">
+                <input autocomplete="off" required type="text" name="username" id="username" placeholder="Username">
+                <input autocomplete="off" required type="email" name="email" id="email" placeholder="Email">
+                <input autocomplete="off" required type="password" name="password" id="password" placeholder="Password" minlength="8">
+                <input autocomplete="off" required type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" minlength="8">
+                <input type="submit" value="Sign Up" name="signup_btn" id="signup_btn">
+            </form>
+            <div class="a_container login_link">
+                <a href="/login">Log In?</a>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; by <a href="https://www.linkedin.com/in/yassine-moutaoikkil-basskar-238b56253">Yassine Moutaoikkil Basskar</a></p>
+    </footer>
+    <script>
+        var signup_error = "{{error}}";
+        if (signup_error != ""){
+            alert(signup_error);
+            signup_error = "";
+        }
+    
+    </script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+</body>
+</html>

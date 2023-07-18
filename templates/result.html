@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>this the title of the result</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.jpg') }}" type="image/jpg">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="one_link">
+            <h1>Email Scrapper</h1>
+        </a>
+        <div class="navbar-toggler" id="navbar-toggler" onclick="navAction();"></div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="one_link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="historique">Historique</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="login">Log Out</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section id="result_section" class="container">
+        <div class="title">
+            <h1>{{heading}}</h1>
+        </div>
+        <div class="result_container">
+            <div class="download">
+                <div class="p_container">
+                {%if type_result == 'mono_link'%}
+                    <p> {{ zipped_data[0][0]|string }} <span>has {{ zipped_data[0][1]|string }} emails</span></p>
+                {% elif type_result == 'bulk_text' %}
+                    {% for data in zipped_data %}
+                        <p>{{ data[0]|string }} <span>has {{ data[1]|string }} emails</span></p>
+                    {% endfor %}
+                {% endif %}
+                <p>the links that did not show up cannot be scrapped</p>
+            </div>
+            {%if count_emails|string|int > 0 %}
+            <a href="{{ url_for('download_excel', filename=action_id|string ~ '.xlsx') }}" download="the_excel">
+                <button type="button">Download</button>
+            </a>
+            {%endif%}
+            </div>
+            <form class="seperator" action="" method="post">
+                <textarea required name="seperator_format" id="seperator_format" placeholder="Enter the emails format in html ..."></textarea>
+                <div class="seperator_input">
+                    <input placeholder="Enter the Email ..." autocomplete="off" required type="text" name="excel_read" id="excel_read">
+                    <button onclick="show_details()"  class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></button>
+                </div>
+                <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">
+            </form>
+            <div class="a_container one_link">
+                <a href="one_link">do you want to enter just one url?</a>
+            </div>
+        </div>
+    </section>
+    <section id="details_section" class="details not_exist container">
+        <div class="close_container">
+            <button onclick="hide_details()" class="close_details"><img src="{{url_for('static', filename='images/x .png')}}"></button>
+        </div>
+        <div id="images_container" class="images_container">
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_1.png')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_2.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_3.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_4.png')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_5.png')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_6.png')}}">
+            </div>
+        </div>
+        <div class="image_nav">
+            <button onclick="previous()" >Previous</button>
+            <button onclick="next()">Next</button>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; by <a href="https://www.linkedin.com/in/yassine-moutaoikkil-basskar-238b56253">Yassine Moutaoikkil Basskar</a></p>
+    </footer>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+</body>
+</html>
+

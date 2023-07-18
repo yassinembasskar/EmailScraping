@@ -1,0 +1,394 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body{ 
+    background-color: #F1FAEE;
+    color: #457B9D;
+}
+
+a {
+    color: unset;
+    text-decoration: unset;
+}
+
+ul {
+    list-style: none;
+}
+
+h1{
+    font-family:  'Roboto', sans-serif;
+}
+
+/* (start) the things that all types of media have*/
+
+nav {
+    background-color: #1D3557;
+    color: #F1FAEE;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+nav .navbar-toggler {
+    display: none;
+}
+
+nav .navbar-collapse .nav-item:hover{
+    background-color: #F1FAEE;
+    color: #1D3557;
+    border-radius: 5px;
+}
+
+nav .navbar-collapse ul{
+    display: flex;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+nav .navbar-collapse .nav-item{
+    text-align: center;
+}
+
+
+
+nav .navbar-collapse .nav-item a{
+    display: block;
+    width: 100%;
+    padding: 10px;
+}
+
+form, div.download {
+    padding: 20px ;
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: 0px;
+}
+
+
+form.multi_form{
+    flex-direction: column;
+}
+
+form.signup_form, form.login_form, form.seperator, div.download{
+    flex-direction: column;
+    width: 400px;
+    max-width: 100%;
+}
+
+.a_container.login_link, .a_container.signup_link{
+    max-width: 400px;
+}
+
+form.signup_form input:nth-child(1), form.signup_form input:nth-child(2), form.signup_form input:nth-child(3), form.signup_form input:nth-child(4){
+    border: #A8DADC 1px solid;
+}
+
+form.login_form input:nth-child(1), form.login_form input:nth-child(2){
+    border: #A8DADC 1px solid;
+}
+
+input, button[type="button"] {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+input[type="url"], input[type=text] {
+    border: #A8DADC 1px solid;
+    flex-grow: 1;
+}
+
+textarea {
+    border: #A8DADC 1px solid;
+    height: 100px;
+    padding: 10px;
+    resize: none;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+input[type="file"]{
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+input[type="submit"], button[type="button"] {
+    border: unset;
+    background-color: #E63946;
+    color: #F1FAEE;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.a_container{
+    text-align: end;
+    padding: 5px 20px;
+    max-width: 500px;
+}
+
+section.container {
+    min-height: calc(100vh - 120px);
+    padding: 40px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form_container{
+    width: 500px;
+    max-width: 100%;
+}
+
+.form_container.signup_container, .form_container.login_container{
+    width: 400px;
+}
+
+.title h1{
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    max-width: 450px;
+}
+
+/* (end) the things that all types of media have*/
+
+/* (start) the things just media less than 425px have*/
+
+@media screen and (max-width: 425px) {
+    nav .navbar-toggler {
+        background-image: url(images/bars.png);
+        width: 40px;
+        height: 40px;
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        cursor: pointer;
+        display: block;
+    }
+    
+    nav .navbar-collapse {
+        width: 100%;
+    }
+
+    #navbarNav{
+        display: none;
+    }
+
+    nav .navbar-collapse ul{
+        flex-direction: column;
+        padding-top: 5px;
+        margin-top: 5px;
+        border-top: 2px #F1FAEE solid;
+    }
+    
+    input, textarea, button[type="button"] {
+        width: 100%;
+    }
+
+}
+
+
+/* (end) the things just media less than 425px have*/
+
+
+
+
+
+
+
+footer {
+    background-color: #1D3557;
+    color: #F1FAEE;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+.historique_container {
+    padding: 10px;
+    max-width: 100%;
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.day_container{
+    border: #A8DADC 1px solid;
+    border-radius: 5px;
+    background-color: #ffffff;
+    margin: 5px;
+}
+
+.day_container h3 {
+    color: #000000;
+    padding: 10px;
+    border-bottom: #A8DADC 1px solid;
+}
+
+.day_container .action_container {
+    padding: 10px;
+}
+
+.day_container .action_container .action {
+    padding: 5px;
+    display: flex;
+}
+
+.day_container .action_container .action .time_action{
+    padding: 10px;
+    color: #000000;
+}
+
+.day_container .action_container .action .title_action {
+    color: #000000;
+    padding: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    width: calc(100% - 97px);
+    cursor: pointer;
+}
+
+.day_container .action_container .action a.delete_action, button.details_icon , button.close_details{
+    all: unset;
+    padding: 10px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.empty_historique {
+    display: flex;
+    padding: 20px;
+    align-items: center;
+}
+
+.empty_historique p{
+    color: #000000;
+    font-size: 20px;
+}
+
+.empty_historique a{
+    padding: 0px 2px;
+}
+
+div.download div.p_container{
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+div.download div.p_container p{
+    padding: 5px;
+}
+
+div.p_container p span {
+    color: #000000;
+}
+
+div.download a{
+    padding: 5px;
+}
+
+button[type="button"]{
+    width: 100%;
+    margin: 0px;
+}
+
+form.seperator {
+    padding-top: 0px;
+    width: unset;
+}
+
+div.seperator_input {
+    display: flex;
+}
+
+button.details_icon {
+    padding: 10px 5px;
+    height: 30px;
+}
+
+button.details_icon img {
+    width: 30px;
+    height: 30px;
+}
+
+input#submit_excel, div.download{
+    width: unset;
+}
+
+.result_container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.a_container.one_link {
+    max-width: 500px;
+}
+
+section.details {
+    background-color: #ffffff;
+    align-items: unset;
+    justify-content: unset;
+    padding: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.close_container {
+    display: flex;
+    justify-content: end;
+}
+
+div.images_container {
+    width: 600%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    height: calc(100vh - 234px);
+}
+
+div.images_container .image{
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: #A8DADC 1px solid;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+.image img{
+    max-width: 100%;
+    max-height: 100%;
+}
+
+div.image_nav {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+div.image_nav button{
+    all: unset;
+    margin: 0px 10px;
+    border-radius: 5px;
+    color: #ffffff;
+    text-align: center;
+    width: 80px;
+    padding: 10px;
+    background-color: #E63946;
+    cursor: pointer;
+}
+

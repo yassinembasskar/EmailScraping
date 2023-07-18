@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.jpg') }}" type="image/jpg">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="one_link">
+            <h1>Email Scrapper</h1>
+        </a>
+        <div class="navbar-toggler" id="navbar-toggler" onclick="navAction();"></div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="one_link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="historique">Historique</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="login">Log Out</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section class="container">
+        <div class="title">
+            <h1>Historique</h1>
+        </div>
+        {% if actions|length == 0 %}
+        <div class="empty_historique">
+            <p>There is no past actions, </p>
+            <a href="one_link">want do an action?</a>
+        </div>
+        {% else %}
+        <div class="historique_container">
+            {%for day in actions%}
+            <div class="day_container">
+                <div>
+                    <h3>{{day[0][2]}}</h3>
+                </div>
+                <div class="action_container">
+                    {%for action in day%}
+                    <div class="action">
+                        <div class="time_action">{{action[3]}}</div>
+                        <div class="title_action"><a href="{{url_for('process_result', action_id = action[0])}}">{{action[6]}}</a></div>
+                        <a class="delete_action" href="{{url_for ('delete_action', action_id = action[0])}}"><img src="{{url_for('static', filename='images/trash.png')}}"></a>
+                    </div>
+                    {%endfor%}
+                </div>
+            </div>
+            {%endfor%}    
+        </div>
+        {% endif %}
+    </section>
+    <footer>
+        <p>&copy; by <a href="https://www.linkedin.com/in/yassine-moutaoikkil-basskar-238b56253">Yassine Moutaoikkil Basskar</a></p>
+    </footer>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+</body>
+</html>

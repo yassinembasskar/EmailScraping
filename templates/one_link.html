@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.jpg') }}" type="image/jpg">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="one_link">
+            <h1>Email Scrapper</h1>
+        </a>
+        <div class="navbar-toggler" id="navbar-toggler" onclick="navAction();"></div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="one_link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="historique">Historique</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="login">Log Out</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <section class="container">
+        <div class="title">
+            <h1>Automate extracting emails from websites</h1>
+        </div>
+        <div class="form_container">
+            <form action="process_onelink_action" method="post">
+                <input autocomplete="off" required type="url" name="url_input" id="url_input" placeholder="Enter the url of the website ...">
+                <input type="submit" value="Convert" name="submit_url" id="submit_url">
+            </form>
+            <div class="a_container">
+                <a href="multi_link">do you want to enter a list of urls?</a>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; by <a href="https://www.linkedin.com/in/yassine-moutaoikkil-basskar-238b56253">Yassine Moutaoikkil Basskar</a></p>
+    </footer>
+    <script>
+        var error = "{{error}}";
+        var username = "{{username}}";
+        var email = "{{email}}";
+        var id = "{{id}}";
+        if (error != ""){
+            alert(error);
+        } else {
+            alert("hello "+username+" you are number "+id+" and your email is "+ email);
+        }
+    </script>
+    <script src="{{url_for('static', filename='script.js')}}"></script>
+</body>
+</html>
