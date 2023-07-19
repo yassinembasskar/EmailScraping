@@ -178,31 +178,21 @@ def process_bulktext_action():
     lines = [line.strip() for line in lines]
     lines = [line for line in lines if line]
     urls = []
-    bad_urls = []
 
     for line in lines:
         if line.startswith('http://') or line.startswith('https://'):
-            try:
-                response = requests.get(line)
-                if response.status_code == 200:
-                    urls.append(line)
-                else:
-                    bad_urls.append(line)
-            except requests.exceptions.ConnectionError:
-                bad_urls.append(line)
-    
+            urls.append(line)
     if len(urls) == 0:
         error = 'Sorry, these urls you entered could not be scrapped'
         session['error'] = error
         return redirect(url_for('multi_link'))
-    
     else:
         emails = []
         count_emails = []
         i = 0
         for url in urls:
-            response = requests.get(url)
-            emails.append(scrapp_website(response))
+            url = url.replace(' ','')
+            emails.append(scrapp_website(url))
             count_emails.append(len(emails[i]))
             i += 1
         id = session['id']
@@ -214,7 +204,7 @@ def process_bulktext_action():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, NULL, %s, 'bulk_text')", (id, formatted_date, formatted_time, input))
+        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'bulk_text')", (id, formatted_date, formatted_time, input))
         conn.commit()
             
         cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_timE = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,input))
@@ -231,11 +221,11 @@ def process_bulktext_action():
         conn.close()
 
         if sum(count_emails) > 0:
-            convert_bulk_to_excel(action_id,emails,urls)
+            result = convert_bulk_to_excel(action_id,emails,urls)
 
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute("UPDATE action SET ACTION_RESULT = 'results/%s.xlsx' WHERE ACTION_ID = %s", (action_id, action_id))
+            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (result, action_id))
             conn.commit()
             cur.close()
             conn.close()
@@ -276,6 +266,9 @@ def delete_action(action_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
+    cur.execute("SELECT ACTION_RESULT FROM ACTION WHERE ACTION_ID = %s",(action_id))
+    row = cur.fetchone()
+
     cur.execute("DELETE FROM urls WHERE ACTION_ID = %s", (action_id))
     conn.commit()
     cur.execute("DELETE FROM action WHERE ACTION_ID = %s", (action_id))
@@ -284,9 +277,9 @@ def delete_action(action_id):
     cur.close()
     conn.close()
 
-
-    file_path = 'results/' + str(action_id) +'.xlsx'
-
+    
+    file_path = 'results/' + str(row[0])
+    
     if os.path.exists(file_path):
         os.remove(file_path)
 
@@ -361,8 +354,9 @@ def process_result(action_id):
 
 @app.route('/download_excel/<filename>')
 def download_excel(filename):
-    
-    full_path = filename
+
+    folder = 'results/'
+    full_path = folder + filename
     return send_file(full_path, as_attachment=True)
 
 if __name__ == '__main__':

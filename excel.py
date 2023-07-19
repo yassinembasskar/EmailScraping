@@ -16,7 +16,7 @@ def convert_to_excel(action_id,emails,url):
     file_name = file_name.replace('http://','')
     file_name = file_name[:file_name.find('/')]
     workbook.save('results/'+file_name+str(action_id)+'.xlsx')
-    return 'results/'+file_name+str(action_id)+'.xlsx'
+    return file_name+str(action_id)+'.xlsx'
 
 def convert_bulk_to_excel(action_id,emails,urls):
     workbook = openpyxl.Workbook()
@@ -34,10 +34,10 @@ def convert_bulk_to_excel(action_id,emails,urls):
             line+=1
         column = get_column_letter(column_index_from_string(column) + 1)
         i+=1
-    file_name = url[0]
+    file_name = urls[0]
     file_name = file_name.replace('https://','')
     file_name = file_name.replace('http://','')
     file_name = file_name[:file_name.find('/')]
     workbook.save('results/'+file_name+str(action_id)+'.xlsx')
-    return 'results/'+file_name+str(action_id)+'.xlsx'
+    return file_name+str(action_id)+'.xlsx'
 

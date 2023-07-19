@@ -259,7 +259,7 @@ footer {
     cursor: pointer;
 }
 
-.day_container .action_container .action a.delete_action, button.details_icon , button.close_details{
+.day_container .action_container .action a.delete_action, a.details_icon , button.close_details{
     all: unset;
     padding: 10px;
     height: 20px;
@@ -313,12 +313,12 @@ div.seperator_input {
     display: flex;
 }
 
-button.details_icon {
+a.details_icon {
     padding: 10px 5px;
     height: 30px;
 }
 
-button.details_icon img {
+a.details_icon img {
     width: 30px;
     height: 30px;
 }

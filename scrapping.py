@@ -37,7 +37,6 @@ https://www.birmingham.ac.uk/schools/education/staff/index.aspx
 https://www.ed.ac.uk/education/about-us/people/academic-staff-a-z
 https://www.gse.harvard.edu/directory
 http://www.narg.org.uk/people-and-partners/staff-directory/ (not secure but good)
-
 '''
 
 def scrapp_website(url):
