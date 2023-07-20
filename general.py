@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets, requests, datetime, os
+from collections import defaultdict
 import pymysql
 from config import get_db_connection
-from scrapping import scrapp_website
-from excel import convert_to_excel, convert_bulk_to_excel
-from collections import defaultdict
+from scrapping import *
+from excel import *
 
 app = Flask(__name__)
 
@@ -346,9 +346,67 @@ def process_result(action_id):
     return redirect(url_for('result',action_id=action_id, result = result, heading=heading, count_emails = count_emails, emails=emails, urls=urls , type_result=type_result))
     
     
-        
-        
+@app.route('/advanced_scrapping/<action_id>', methods=['POST'])
+def advanced_scrapping(action_id):
+
+    html_input = request.form.get('html_format')
+    email_input = request.form.get('email_format')
+    xpath_input = request.form.get('xpath_format')
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
+    urls_rows = cur.fetchall()
+    cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (action_id))
+    action_row = cur.fetchone()
+    if action_row[6] == 'mono_link':
+        emails = scrapp_deep(urls_rows[0][3],email_input,html_input,xpath_input)
+        if len(emails) > urls_rows[0][4]:
+            if urls_rows[0][4] > 0:
+                file_path = 'results/' + str(action_row[0])
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            filename = convert_to_excel(action_id,emails,urls_rows[0][3])
+            cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE ACTION_ID = %s", (len(emails), action_id))
+            conn.commit()
+            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, action_id))
+            conn.commit()
+    elif (action_row[6] == 'bulk_text'):
+        i = 0
+        urls = []
+        emails = []
+        count_emails = []
+        for row in urls_rows:
+            url = row[3]
+            email = scrapp_deep(url,email_input,html_input,xpath_input)
+            if len(email) > row[4]:
+                urls.append(row[3])
+                emails.append(email)
+                count_emails.append(len(emails[i]))
+                i+=1
+        if sum(count_emails)>0:
+            if action_row[4] == None:
+                filename = convert_bulk_to_excel(action_id,emails,urls)
+                cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, action_id))
+                conn.commit()
+            else:
+                update_excel(action_row[4],emails,urls)
+            for row in urls_rows:
+                if row[3] in urls:
+                    i = urls.index(row[3])
+                    cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE URL_ID = %s", (count_emails[i], row[0]))
+                    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect(url_for('process_result', action_id=action_id))
+            
+
+
+
     
+
+
+
 
     
 

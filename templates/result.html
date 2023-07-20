@@ -50,10 +50,11 @@
             </a>
             {%endif%}
             </div>
-            <form class="seperator" action="" method="post">
-                <textarea name="seperator_format" id="seperator_format" placeholder="Enter the emails format in html ..."></textarea>
+            <form class="seperator" action="{{ url_for('advanced_scrapping', action_id=action_id) }}" method="post">
+                <textarea required name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
+                <input required autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>
                 <div class="seperator_input">
-                    <input placeholder="Enter the Email ..." autocomplete="off" type="text" name="excel_read" id="excel_read">
+                    <input required placeholder="Enter the Email..." autocomplete="off" type="text" name="email_format" id="email_format">
                     <a onclick="show_details()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">
@@ -78,13 +79,13 @@
                 <img src="{{url_for('static', filename='images/details_sepetator/image_3.jpeg')}}">
             </div>
             <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_4.png')}}">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_4.jpeg')}}">
             </div>
             <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_5.png')}}">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_5.jpeg')}}">
             </div>
             <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_6.png')}}">
+                <img src="{{url_for('static', filename='images/details_sepetator/image_6.jpeg')}}">
             </div>
         </div>
         <div class="image_nav">

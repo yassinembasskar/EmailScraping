@@ -1,4 +1,6 @@
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 import re
 import requests
@@ -23,9 +25,8 @@ not successful website to scrapp:
 solved problems and now can ve scrapped:
 ---------------------------------------
 
-https://research-information.bris.ac.uk/en/persons/ (seperating email format) solved in scrapp_again()
-<a data-md5="bWFpbHRvOm5hMTQ0ODNAYnJpc3RvbC5hYy51aw==" href="#" class="email" tabindex="-1">na14483<span class="email-ta">@</span><script>encryptedA();</script>bristol.ac<span class="email-tod">.</span><script>encryptedDot();</script>uk</a>
-na14483@bristol.ac.uk
+====> https://research-information.bris.ac.uk/en/persons/ 
+      https://www.cs.washington.edu/people/staff (seperating email format) solved in scrapp_again()
 
 very easy to scrapp websites:
 -----------------------------
@@ -87,7 +88,7 @@ def replace_all(splits,html_input):
             return html_input
     return html_input
 
-def scrapp_again(url,wanted_email,html_input):
+def scrapp_deep(url,wanted_email,html_input,xpath):
     wanted_email = wanted_email.split('@')
     first_part = wanted_email[0]
     second_part = wanted_email[1]
@@ -98,8 +99,13 @@ def scrapp_again(url,wanted_email,html_input):
     html_input = replace_all(second_part, html_input)
     markers = html_input.split('(\w+)')
     driver = webdriver.Chrome()
-    driver.implicitly_wait(30)
+    driver.implicitly_wait(10)
     driver.get(url)
+    try:
+        wait = WebDriverWait(driver, 10) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    except:
+        pass
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()
