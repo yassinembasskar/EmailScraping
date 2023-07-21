@@ -51,11 +51,21 @@
             {%endif%}
             </div>
             <form class="seperator" action="{{ url_for('advanced_scrapping', action_id=action_id) }}" method="post">
+                <p style="color: black;padding: 5px 10px;"><span>if the email format is splitted in html:</span></p>
                 <textarea required name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
                 <input required autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>
                 <div class="seperator_input">
                     <input required placeholder="Enter the Email..." autocomplete="off" type="text" name="email_format" id="email_format">
                     <a onclick="show_details()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
+                </div>
+                <div class="click_action">
+                    <input required placeholder="Enter the selector ..." autocomplete="off" type="text" name="action_input" id="action_input">
+                    <select id="dropdown" name="dropdown_option">
+                        <option value="id">id</option>
+                        <option value="xpath">xpath</option>
+                        <option value="class">class</option>
+                    </select>
+                    <a onclick="show_details_2()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">
             </form>
@@ -67,6 +77,35 @@
     <section id="details_section" class="details not_exist container">
         <div class="close_container">
             <button onclick="hide_details()" class="close_details"><img src="{{url_for('static', filename='images/x .png')}}"></button>
+        </div>
+        <div id="images_container" class="images_container">
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_1.png')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_2.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_3.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_4.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_5.jpeg')}}">
+            </div>
+            <div class="image">
+                <img src="{{url_for('static', filename='images/click_details/image_6.jpeg')}}">
+            </div>
+        </div>
+        <div class="image_nav">
+            <button onclick="previous()" >Previous</button>
+            <button onclick="next()">Next</button>
+        </div>
+    </section>
+    <section id="details_section_2" class="details not_exist container">
+        <div class="close_container">
+            <button onclick="hide_details_2()" class="close_details"><img src="{{url_for('static', filename='images/x .png')}}"></button>
         </div>
         <div id="images_container" class="images_container">
             <div class="image">

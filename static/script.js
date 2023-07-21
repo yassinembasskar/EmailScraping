@@ -3,6 +3,7 @@
 var collapse = document.getElementById("navbarNav");
 var result_section = document.getElementById("result_section");
 var details_section = document.getElementById("details_section");
+var details_section = document.getElementById("details_section_2");
 
 var images_container_position = 0;
 var images_container = document.getElementById("images_container");
@@ -27,6 +28,16 @@ function show_details(){
 function hide_details(){
     result_section.style.display = "flex";
     details_section.style.display = "none";
+}
+
+function show_details_2(){
+    result_section.style.display = "none";
+    details_section_2.style.display = "flex";
+}
+
+function hide_details_2(){
+    result_section.style.display = "flex";
+    details_section_2.style.display = "none";
 }
 
 function next(){

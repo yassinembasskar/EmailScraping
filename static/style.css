@@ -313,6 +313,17 @@ div.seperator_input {
     display: flex;
 }
 
+div.click_action {
+    display: flex;
+    align-items: center;
+}
+
+select {
+    height: fit-content;
+    padding: 9px;
+    border: #A8DADC 1px solid;
+}
+
 a.details_icon {
     padding: 10px 5px;
     height: 30px;

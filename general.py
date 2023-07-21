@@ -232,6 +232,7 @@ def process_bulktext_action():
         
         return redirect(url_for('process_result', action_id=action_id))
 
+
 @app.route('/historique')
 def historique():
     if ('username' in session and 'email' in session and 'id' in session):
@@ -260,6 +261,7 @@ def historique():
     else:
         return redirect(url_for('logout'))
 
+
 @app.route('/delete_action/<action_id>')
 def delete_action(action_id):
 
@@ -276,7 +278,6 @@ def delete_action(action_id):
 
     cur.close()
     conn.close()
-
     
     file_path = 'results/' + str(row[0])
     
@@ -285,7 +286,6 @@ def delete_action(action_id):
 
     return redirect(url_for('historique'))
 
-    
 
 @app.route('/result')
 def result():
@@ -399,16 +399,6 @@ def advanced_scrapping(action_id):
     cur.close()
     conn.close()
     return redirect(url_for('process_result', action_id=action_id))
-            
-
-
-
-    
-
-
-
-
-    
 
 @app.route('/download_excel/<filename>')
 def download_excel(filename):
