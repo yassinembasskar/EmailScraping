@@ -50,12 +50,10 @@ def update_excel(filename,emails,urls):
         url = sheet[column + '1'].value
         if url in urls:
             i = urls.index(url)
-            del urls[i]
             line = 2
             for email in emails[i]:
                 sheet[str(column)+str(line)].value = email
                 line+=1
-            del emails[i]
         column = get_column_letter(column_index_from_string(column) + 1)
     i=0
     for url in urls:

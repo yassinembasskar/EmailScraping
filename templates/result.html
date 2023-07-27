@@ -51,20 +51,15 @@
             {%endif%}
             </div>
             <form class="seperator" action="{{ url_for('advanced_scrapping', action_id=action_id) }}" method="post">
-                <p style="color: black;padding: 5px 10px;"><span>if the email format is splitted in html:</span></p>
-                <textarea required name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
-                <input required autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>
+                <p style="color: black;padding: 5px 10px;"><span>advanced search:</span></p>
+                <textarea name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
+                <input autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>
                 <div class="seperator_input">
-                    <input required placeholder="Enter the Email..." autocomplete="off" type="text" name="email_format" id="email_format">
+                    <input placeholder="Enter the Email..." autocomplete="off" type="text" name="email_format" id="email_format">
                     <a onclick="show_details()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <div class="click_action">
-                    <input required placeholder="Enter the selector ..." autocomplete="off" type="text" name="action_input" id="action_input">
-                    <select id="dropdown" name="dropdown_option">
-                        <option value="id">id</option>
-                        <option value="xpath">xpath</option>
-                        <option value="class">class</option>
-                    </select>
+                    <input placeholder="Enter the selector ..." autocomplete="off" type="text" name="action_input" id="action_input">
                     <a onclick="show_details_2()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">

@@ -4,7 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 import re
 import requests, time
-
+from selenium.common.exceptions import NoSuchElementException
 
 '''
 not successful website to scrapp:
@@ -45,15 +45,15 @@ https://ecse.postech.ac.kr/member/professor/
 '''
 testing websites:
 ================
-loadMore:
+loadMore: >>>>>DONE
 --------
-https://hr.mit.edu/staff 
-https://www.cuchicago.edu/general-information/faculty-staff-directory/
-https://ischool.utoronto.ca/faculty-staff/faculty-staff-directory/
+https://hr.mit.edu/staff    (successful)
+https://www.cuchicago.edu/general-information/faculty-staff-directory/    (successful)
+https://ischool.utoronto.ca/faculty-staff/faculty-staff-directory/       (successful)
 
-next:
+next: 
 ----
-https://www.tudelft.nl/en/about-tu-delft/find-employees
+https://www.tudelft.nl/en/about-tu-delft/find-employees     (successful)
 https://www.cambridgecollege.edu/faculty-and-staff/regional
 https://www.lib.berkeley.edu/help/staff-directory
 https://library.princeton.edu/staff/directory
@@ -79,20 +79,24 @@ https://english.yale.edu/people/faculty
 
 combination of two:
 ------------------
-https://publichealth.jhu.edu/faculty/directory/list?display_type=table
-https://www.polytechnique.edu/en/education/academic-and-research-departments/applied-mathematics-department-depmap/faculty-members (multi links and incryptation)
+https://publichealth.jhu.edu/faculty/directory/list?display_type=tablefaculty-members (multi links and incryptation)
 https://www.ualberta.ca/science/programs/create/atums/team/u-of-a-students/index.html (encryptation and click)
 https://www.kcl.ac.uk/people (next and multilinks)
 https://research.monash.edu/en/persons/ (encryptation and next)
 
 absolutely can not be scrapped:
 ------------------------------
-
+https://www.polytechnique.edu/en/education/academic-and-research-departments/applied-mathematics-department-depmap/
 '''
-def scrapp_website(url):
+def scrapp_website(url,xpath):
     driver = webdriver.Chrome()
     driver.get(url)
     driver.implicitly_wait(5)
+    try:
+        wait = WebDriverWait(driver, 10) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    except:
+        pass
     scroll_height = 0
     prev_scroll_height = 0
     while 1:
@@ -174,3 +178,68 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
     for match in re.finditer(pattern, body):
         emails.add(match.group())
     return emails
+
+def scrapp(body):
+    emails = set()
+    pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
+    for match in re.finditer(pattern, body):
+        emails.add(match.group())
+    return emails
+
+def scrapp_normal_action(url,howto,identifications,xpath):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    driver.implicitly_wait(5)
+    try:
+        wait = WebDriverWait(driver, 10) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    except:
+        pass
+    scroll_height = 0
+    prev_scroll_height = 0
+    i = 0
+    emails = set()
+    for how in howto:
+        n=-1
+        if identifications[i].endswith(')'):
+            j = identifications[i].rfind('(')
+            if j != -1:
+                n = identifications[i][j+1:-1]
+                n = int(n)
+                identifications[i] = identifications[i][:j]
+        if how == 'click':
+            time.sleep(2)
+            while n != 0:
+                if n>0:
+                    n=n-1
+                try:
+                    time.sleep(2)
+                    while 1:
+                        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                        time.sleep(2)
+                        scroll_height = driver.execute_script("return document.body.scrollHeight")
+                        if scroll_height == prev_scroll_height:
+                            break
+                        prev_scroll_height = scroll_height
+                    
+                    wait = WebDriverWait(driver, 10) 
+                    wait.until(EC.presence_of_element_located((By.XPATH, identifications[i])))
+                    element = driver.find_element(By.XPATH, identifications[i])
+                    html_content = driver.find_element(By.TAG_NAME, "body")
+                    result = scrapp(html_content.get_attribute("innerHTML"))
+                    for email in result:
+                        emails.add(email)
+                    if not element.is_enabled():
+                        break
+                    element.click()
+                    time.sleep(5)
+                except:
+                    break
+        elif how == 'links':
+            pass
+        else:
+            break
+        i+=1
+    return emails
+    
+            

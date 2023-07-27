@@ -6,6 +6,7 @@ import pymysql
 from config import get_db_connection
 from scrapping import *
 from excel import *
+from advanced import *
 
 app = Flask(__name__)
 
@@ -126,7 +127,7 @@ def one_link():
 @app.route('/process_onelink_action', methods=['POST'])
 def process_onelink_action():
     url = request.form.get('url_input')
-    emails = scrapp_website(url)
+    emails = scrapp_website(url,'//body')
     count_emails = len(emails)
     id = session['id']
     conn = get_db_connection()
@@ -192,7 +193,7 @@ def process_bulktext_action():
         i = 0
         for url in urls:
             url = url.replace(' ','')
-            emails.append(scrapp_website(url))
+            emails.append(scrapp_website(url,'//body'))
             count_emails.append(len(emails[i]))
             i += 1
         id = session['id']
@@ -344,14 +345,16 @@ def process_result(action_id):
         cur.close()
         conn.close()
     return redirect(url_for('result',action_id=action_id, result = result, heading=heading, count_emails = count_emails, emails=emails, urls=urls , type_result=type_result))
-    
-    
+
+
 @app.route('/advanced_scrapping/<action_id>', methods=['POST'])
 def advanced_scrapping(action_id):
 
     html_input = request.form.get('html_format')
     email_input = request.form.get('email_format')
     xpath_input = request.form.get('xpath_format')
+    action_input = request.form.get('action_input')
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -360,7 +363,7 @@ def advanced_scrapping(action_id):
     cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (action_id))
     action_row = cur.fetchone()
     if action_row[6] == 'mono_link':
-        emails = scrapp_deep(urls_rows[0][3],email_input,html_input,xpath_input)
+        emails = pick_scrapping_method(urls_rows[0][3],email_input,html_input,xpath_input,action_input)   
         if len(emails) > urls_rows[0][4]:
             if urls_rows[0][4] > 0:
                 file_path = 'results/' + str(action_row[0])
@@ -378,9 +381,9 @@ def advanced_scrapping(action_id):
         count_emails = []
         for row in urls_rows:
             url = row[3]
-            email = scrapp_deep(url,email_input,html_input,xpath_input)
+            email = list(pick_scrapping_method(url,email_input,html_input,xpath_input,action_input))
             if len(email) > row[4]:
-                urls.append(row[3])
+                urls.append(url)
                 emails.append(email)
                 count_emails.append(len(emails[i]))
                 i+=1
@@ -396,6 +399,7 @@ def advanced_scrapping(action_id):
                     i = urls.index(row[3])
                     cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE URL_ID = %s", (count_emails[i], row[0]))
                     conn.commit()
+            
     cur.close()
     conn.close()
     return redirect(url_for('process_result', action_id=action_id))
