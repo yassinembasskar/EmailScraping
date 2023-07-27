@@ -35,22 +35,22 @@
         <div class="result_container">
             <div class="download">
                 <div class="p_container">
-                {%if type_result == 'mono_link'%}
+                {%if actionType == 'mono_link'%}
                     <p> {{ zipped_data[0][0]|string }} <span>has {{ zipped_data[0][1]|string }} emails</span></p>
-                {% elif type_result == 'bulk_text' %}
+                {% elif actionType == 'bulk_text' %}
                     {% for data in zipped_data %}
                         <p>{{ data[0]|string }} <span>has {{ data[1]|string }} emails</span></p>
                     {% endfor %}
                 {% endif %}
                 <p>the links that did not show up cannot be scrapped</p>
             </div>
-            {%if count_emails|string|int > 0 %}
+            {%if sumEmailsNumb|string|int > 0 %}
             <a href="{{ url_for('download_excel', filename=result) }}" download>
                 <button type="button">Download</button>
             </a>
             {%endif%}
             </div>
-            <form class="seperator" action="{{ url_for('advanced_scrapping', action_id=action_id) }}" method="post">
+            <form class="seperator" action="{{ url_for('advanced_scrapping', actionId=actionId) }}" method="post">
                 <p style="color: black;padding: 5px 10px;"><span>advanced search:</span></p>
                 <textarea name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
                 <input autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>

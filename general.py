@@ -1,12 +1,12 @@
+#this is all i need to import for this project
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
-import secrets, requests, datetime, os
 from collections import defaultdict
-import pymysql
 from config import get_db_connection
 from scrapping import *
 from excel import *
 from advanced import *
+import secrets, requests, datetime, os, pymysql
 
 app = Flask(__name__)
 
@@ -14,14 +14,15 @@ app.secret_key = secrets.token_hex(16)
 
 @app.route('/')
 def check_connection():
+    #using config.py to get a connection to the database
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
             cursor.execute("SELECT 1")
-            result = cursor.fetchone()
+            foundResult = cursor.fetchone()
 
-        if result:
-            return 'Connected to the database'
+        if foundResult:
+            return redirect(url_for('login'))
         else:
             return 'Failed to connect to the database'
 
@@ -30,39 +31,41 @@ def check_connection():
 
 @app.route('/login')
 def login():
+    #the session must contain the error if it exist and the username his email and id
     error = session.pop('error', '')
     username = session.pop('username', '')
     email = session.pop('email', '')
-    id = session.pop('id', '')
+    userId = session.pop('userId', '')
     return render_template('login.html', error=error, email=email, username=username, id=id)
 
 @app.route('/process_login', methods=['POST'])
 def process_login():
     username = request.form.get('username_email')
-    password = request.form.get('password')
-
+    enteredPassword = request.form.get('password')
+    #check if the username or the emails entered is in the database
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM user WHERE USER_EMAIL = %s or USER_NAME = %s", (username,username))
-    row = cur.fetchone()
+    userInfo = cur.fetchone()
     cur.close()
     conn.close()
 
-    if row is None:
-        error = cur.rowcount
+    if userInfo is None:
+        error = 'This username or the email does not exist'
         session['error'] = error 
         return redirect(url_for('login'))
     else:
-        if check_password_hash(row[3], password):
+        #check if the password is correct
+        realPassword = userInfo[3]
+        if check_password_hash(realPassword, enteredPassword):
             error = 'The password you entered is incorrect'
             session['error'] = error 
             return redirect(url_for('login'))
         else:
-            session['username'] = row[1]
-            session['email'] = row[2]
-            session['id'] = row[0]
+            session['username'] = userInfo[1]
+            session['email'] = userInfo[2]
+            session['userId'] = userInfo[0]
             return redirect(url_for('one_link'))
-
 
 @app.route('/signup')
 def signup():
@@ -80,33 +83,27 @@ def process_signup():
         error = 'the passwords are not identical'
         session['error'] = error 
         return redirect(url_for('signup'))
-        
 
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM user WHERE USER_EMAIL = %s or USER_NAME = %s", (email,username))
-    row = cur.fetchone()
-    cur.close()
-    conn.close()
-
-    if row is not None:
+    userInfo = cur.fetchone()
+    #check if the email or the username already exist
+    if userInfo is not None:
         error = 'the email or the username you entered already exists'
         session['error'] = error 
         return redirect(url_for('signup'))
     else:
-        conn = get_db_connection()
-        cur = conn.cursor()
         cur.execute("INSERT INTO user (USER_EMAIL, USER_NAME, USER_PASSWORD) VALUES (%s, %s, %s)", (email, username, generate_password_hash(password)))
         conn.commit()
-        cur.execute("SELECT * FROM user WHERE USER_EMAIL = %s and USER_NAME = %s", (email,username))
-        row = cur.fetchone()
+        cur.execute("SELECT USER_ID FROM user WHERE USER_NAME = %s", (username))
+        userId = cur.fetchone()[0]
         cur.close()
         conn.close()
         session['username'] = username
         session['email'] = email
-        session['id'] = row[0]
+        session['userId'] = userId
         return redirect(url_for('one_link'))
-
 
 @app.route('/logout')
 def logout():
@@ -115,241 +112,224 @@ def logout():
 
 @app.route('/one_link')
 def one_link():
-    if ('username' in session and 'email' in session and 'id' in session):
+    if ('username' in session and 'email' in session and 'userId' in session):
         username = session['username']
         email = session['email']
-        id = session['id']
+        userId = session['userId']
         error = session.pop('error', '')
-        return render_template('one_link.html' , username=username, email=email, id=id, error=error)
+        return render_template('one_link.html' , username=username, email=email, userId=userId, error=error)
     else:
         return redirect(url_for('logout'))
     
 @app.route('/process_onelink_action', methods=['POST'])
 def process_onelink_action():
-    url = request.form.get('url_input')
-    emails = scrapp_website(url,'//body')
-    count_emails = len(emails)
-    id = session['id']
-    conn = get_db_connection()
-    cur = conn.cursor()
+    if ('username' in session and 'email' in session and 'userId' in session):
+        #scrapp the enteredUrl and count the scrapped emails
+        enteredUrl = request.form.get('url_input')
+        scrappedEmails = scrapp_website(enteredUrl,'//body')
+        countScrappedEmails = len(scrappedEmails)
+        userId = session['userId']
+        currentDate = datetime.date.today()
+        formattedDate = currentDate.strftime("%d-%m-%Y")
+        currentTime = datetime.datetime.now().time()
+        formattedTime = currentTime.strftime("%H:%M")
 
-    current_date = datetime.date.today()
-    formatted_date = current_date.strftime("%d-%m-%Y")
-    current_time = datetime.datetime.now().time()
-    formatted_time = current_time.strftime("%H:%M")
-
-    cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'mono_link')", (id, formatted_date, formatted_time, url))
-    conn.commit()
-    
-    cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_TIME = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,url))
-    action_id = cur.fetchone()[0]
-
-    cur.execute("INSERT INTO URLS (ACTION_ID, USER_ID, URL_LINK, URL_EMAILS) VALUES (%s, %s, %s, %s)", (action_id, session['id'], url, count_emails))
-    conn.commit()
-
-    cur.close()
-    conn.close()
-    if count_emails > 0:
-
-        result_path = convert_to_excel(action_id,emails,url)
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (result_path, action_id))
+        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'mono_link')", (userId, formattedDate, formattedTime, enteredUrl))
         conn.commit()
+        #there is a probability that the action id below can have more than one row
+        cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_TIME = %s and ACTION_INPUT = %s", (userId,formattedDate,formattedTime,enteredUrl))
+        actionId = cur.fetchone()[0]
+        cur.execute("INSERT INTO URLS (ACTION_ID, USER_ID, URL_LINK, URL_EMAILS) VALUES (%s, %s, %s, %s)", (actionId, session['userId'], enteredUrl, countScrappedEmails))
+        conn.commit()
+
+        if countScrappedEmails > 0:
+            resultPath = convert_to_excel(actionId,scrappedEmails,enteredUrl)
+            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (resultPath, actionId))
+            conn.commit()
+        
         cur.close()
         conn.close()
-    return redirect(url_for('process_result', action_id=action_id))
+        return redirect(url_for('process_result', actionId=actionId))
+    else:
+        return redirect(url_for('logout'))
         
 
 @app.route('/multi_link')
 def multi_link():
-    if ('username' in session and 'email' in session and 'id' in session):
+    if ('username' in session and 'email' in session and 'userId' in session):
         username = session['username']
         email = session['email']
-        id = session['id']
+        userId = session['userId']
         error = session.pop('error', '')
-        return render_template('multi_link.html' , username=username, email=email, id=id, error=error)
+        return render_template('multi_link.html' , username=username, email=email, userId=userId, error=error)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('logout'))
 
 @app.route('/process_bulktext_action', methods=['POST'])
 def process_bulktext_action():
-    input = request.form.get('bulk_text')
-    lines = input.split('\n')
-    lines = [line.strip() for line in lines]
-    lines = [line for line in lines if line]
-    urls = []
-
-    for line in lines:
-        if line.startswith('http://') or line.startswith('https://'):
-            urls.append(line)
-    if len(urls) == 0:
-        error = 'Sorry, these urls you entered could not be scrapped'
-        session['error'] = error
-        return redirect(url_for('multi_link'))
-    else:
-        emails = []
-        count_emails = []
-        i = 0
-        for url in urls:
-            url = url.replace(' ','')
-            emails.append(scrapp_website(url,'//body'))
-            count_emails.append(len(emails[i]))
-            i += 1
-        id = session['id']
-        current_date = datetime.date.today()
-        formatted_date = current_date.strftime("%d-%m-%Y")
-        current_time = datetime.datetime.now().time()
-        formatted_time = current_time.strftime("%H:%M")
-        
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'bulk_text')", (id, formatted_date, formatted_time, input))
-        conn.commit()
+    if ('username' in session and 'email' in session and 'userId' in session):
+        bulkText = request.form.get('bulk_text')
+        lines = bulkText.split('\n')
+        #take all the lines and rmove the whitespace in them then remove the empty lines then check if it is a valid url
+        lines = [line.replace(' ','') for line in lines]
+        lines = [line for line in lines if line]
+        validUrls = []
+        for line in lines:
+            if line.startswith('http://') or line.startswith('https://'):
+                validUrls.append(line)
+        if len(validUrls) == 0:
+            error = 'Sorry, these urls you entered could not be scrapped'
+            session['error'] = error
+            return redirect(url_for('multi_link'))
+        else:
+            scrappedEmails = []
+            countScrappedEmails = []
+            i = 0
+            for url in validUrls:
+                scrappedEmails.append(scrapp_website(url,'//body'))
+                countScrappedEmails.append(len(scrappedEmails[i]))
+                i += 1
+            userId = session['userId']
+            currentDate = datetime.date.today()
+            formattedDate = currentDate.strftime("%d-%m-%Y")
+            currentTime = datetime.datetime.now().time()
+            formattedTime = currentTime.strftime("%H:%M")
             
-        cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_timE = %s and ACTION_INPUT = %s", (session['id'],formatted_date,formatted_time,input))
-        action_id = cur.fetchone()[0]
-
-        i=0
-
-        for url in urls:
-            cur.execute("INSERT INTO urls (ACTION_ID, USER_ID, URL_LINK, URL_EMAILS) VALUES (%s, %s, %s, %s)", (action_id, session['id'], url, count_emails[i]))
-            conn.commit()
-            i+=1
-
-        cur.close()
-        conn.close()
-
-        if sum(count_emails) > 0:
-            result = convert_bulk_to_excel(action_id,emails,urls)
-
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (result, action_id))
+            cur.execute("INSERT INTO action (USER_ID, ACTION_DATE, ACTION_TIME, ACTION_RESULT, ACTION_INPUT, ACTION_INPUT_TYPE ) VALUES (%s, %s, %s, NULL, %s, 'bulk_text')", (userId, formattedDate, formattedTime, bulkText))
             conn.commit()
+            #there is a probability that the action id below can have more than one row
+            cur.execute("SELECT ACTION_ID FROM action WHERE USER_ID = %s and ACTION_DATE = %s and ACTION_timE = %s and ACTION_INPUT = %s", (userId,formattedDate,formattedTime,bulkText))
+            actionId = cur.fetchone()[0]
+
+            i = 0
+            for url in validUrls:
+                cur.execute("INSERT INTO urls (ACTION_ID, USER_ID, URL_LINK, URL_EMAILS) VALUES (%s, %s, %s, %s)", (actionId, userId, url, countScrappedEmails[i]))
+                conn.commit()
+                i+=1
+            if sum(countScrappedEmails) > 0:
+                resultPath = convert_bulk_to_excel(actionId,scrappedEmails,validUrls)
+                cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (resultPath, actionId))
+                conn.commit()
+
             cur.close()
             conn.close()
-        
-        return redirect(url_for('process_result', action_id=action_id))
-
+            return redirect(url_for('process_result', actionId=actionId))
+    else:
+        return redirect(url_for('logout'))
 
 @app.route('/historique')
 def historique():
-    if ('username' in session and 'email' in session and 'id' in session):
+    if ('username' in session and 'email' in session and 'userId' in session):
         username = session['username']
         email = session['email']
-        id = session['id']
+        userId = session['userId']
         error = session.pop('error', '')
+
         conn = get_db_connection()
         cur = conn.cursor()
-
-        cur.execute("SELECT * FROM action WHERE USER_ID = %s ORDER BY ACTION_DATE DESC, ACTION_TIME DESC", (id))
-        rows = cur.fetchall()
-
-        sorted_actions = []
-        action_date = ''
-        for row in rows:
-            if row[2] == action_date:
-                sorted_actions[-1].append(row)
+        cur.execute("SELECT * FROM action WHERE USER_ID = %s ORDER BY ACTION_DATE DESC, ACTION_TIME DESC", (userId))
+        userActions = cur.fetchall()
+        #sort the actions to be an array that contains arrays that have the same date
+        sortedActions = []
+        actionDate = ''
+        for row in userActions:
+            if row[2] == actionDate:
+                sortedActions[-1].append(row)
             else:
-                sorted_actions.append([row])
+                sortedActions.append([row])
                 action_date = row[2]
-
         cur.close()
         conn.close()
-        return render_template('historique.html', username=username, email=email, id=id, error=error, actions = sorted_actions)
+
+        return render_template('historique.html', username=username, email=email, userId=userId, error=error, actions = sortedActions)
     else:
         return redirect(url_for('logout'))
 
-
-@app.route('/delete_action/<action_id>')
-def delete_action(action_id):
-
+@app.route('/delete_action/<actionId>')
+def delete_action(actionId):
     conn = get_db_connection()
     cur = conn.cursor()
-
-    cur.execute("SELECT ACTION_RESULT FROM ACTION WHERE ACTION_ID = %s",(action_id))
-    row = cur.fetchone()
-
-    cur.execute("DELETE FROM urls WHERE ACTION_ID = %s", (action_id))
+    cur.execute("SELECT ACTION_RESULT FROM ACTION WHERE ACTION_ID = %s",(actionId))
+    actionResult = cur.fetchone()[0]
+    cur.execute("DELETE FROM urls WHERE ACTION_ID = %s", (actionId))
     conn.commit()
-    cur.execute("DELETE FROM action WHERE ACTION_ID = %s", (action_id))
+    cur.execute("DELETE FROM action WHERE ACTION_ID = %s", (actionId))
     conn.commit()
-
     cur.close()
     conn.close()
     
-    file_path = 'results/' + str(row[0])
-    
+    file_path = 'results/' + str(actionResult)
     if os.path.exists(file_path):
         os.remove(file_path)
-
     return redirect(url_for('historique'))
-
 
 @app.route('/result')
 def result():
-    if ('username' in session and 'email' in session and 'id' in session):
+    if ('username' in session and 'email' in session and 'userId' in session):
         username = session['username']
         email = session['email']
-        id = session['id']
+        userId = session['userId']
         error = session.pop('error', '')
-        action_id = request.args.get('action_id')
+        actionId = request.args.get('actionId')
         heading = request.args.get('heading')
-        count_emails = request.args.get('count_emails')
-        urls = request.args.getlist('urls')
-        emails = request.args.getlist('emails')
-        zipped_data = list(zip(urls, emails))
-        type_result = request.args.get('type_result')
-        result = request.args.get('result')
-        return render_template('result.html', action_id = action_id, result=result, count_emails=count_emails, heading=heading, zipped_data=zipped_data, type_result = type_result , username=username, email=email, id=id, error=error)
+        sumEmailsNumb = request.args.get('sumEmailsNumb')
+        links = request.args.getlist('links')
+        emailsNumb = request.args.getlist('emailsNumb')
+        zipped_data = list(zip(links, emailsNumb))
+        actionType = request.args.get('actionType')
+        resultPath = request.args.get('resultPath')
+        return render_template('result.html', actionId = actionId, resultPath=resultPath, sumEmailsNumb=sumEmailsNumb, heading=heading, zipped_data=zipped_data, actionType = actionType , username=username, emailsNumb=emailsNumb, UserId=userId, error=error)
     else:
         return redirect(url_for('logout'))
 
-@app.route('/process_result/<action_id>')
-def process_result(action_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (action_id))
-    row = cur.fetchone()
-    user_id = row[1]
-    result = row[4]
-    if user_id != session['id']:
-        return redirect(url_for(one_link))
-    if row[6] == 'mono_link':
-        type_result = 'mono_link'
-        urls = row[5]
-        cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
-        row = cur.fetchone()
-        emails = row[4]
-        count_emails = emails
-        if emails == 0 :
-            heading = '0 out of 1 that has emails'
-        else :
-            heading = '1 out of 1 that has emails'
-    elif row[6] == 'bulk_text':
-        type_result = 'bulk_text'
-        cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
-        rows = cur.fetchall()
-        emails = []
-        urls = []
-        i = 0
-        for row in rows:
-            emails.append(row[4])
-            urls.append(row[3])
-            if row[4] != 0:
-                i+=1
-        count_emails = sum(emails)
-        heading = str(i) + ' out of ' + str(len(emails)) + ' that has emails'
+@app.route('/process_result/<actionId>')
+def process_result(actionId):
+    if ('username' in session and 'email' in session and 'userId' in session):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (actionId))
+        action = cur.fetchone()
+        userId = action[1]
+        resultPath = action[4]
+        actionType = action[6]
+
+        if userId != session['userId']:
+            return redirect(url_for(one_link))
+        if actionType == 'mono_link':
+            cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (actionId))
+            url = cur.fetchone()
+            emailsNumb = url[4]
+            links = url[3]
+            sumEmailsNumb = emailsNumb
+            if emailsNumb == 0 :
+                heading = '0 out of 1 that has emails'
+            else :
+                heading = '1 out of 1 that has emails'
+        elif actionType == 'bulk_text':
+            cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (actionId))
+            urls = cur.fetchall()
+            emailsNumb = []
+            links = []
+            failedLinks = 0
+            for row in urls:
+                emailsNumb.append(row[4])
+                links.append(row[3])
+                if row[4] != 0:
+                    failedLinks+=1
+            sumEmailsNumb = sum(emailsNumb)
+            heading = str(failedLinks) + ' out of ' + str(len(links)) + ' that has emails'
         cur.close()
         conn.close()
-    return redirect(url_for('result',action_id=action_id, result = result, heading=heading, count_emails = count_emails, emails=emails, urls=urls , type_result=type_result))
+        return redirect(url_for('result',actionId=actionId, resultPath=resultPath, heading=heading, sumEmailsNumb = sumEmailsNumb, emailsNumb=emailsNumb, links=links , actionType=actionType))
+    else:
+        return redirect(url_for('logout'))
 
-
-@app.route('/advanced_scrapping/<action_id>', methods=['POST'])
-def advanced_scrapping(action_id):
-
+@app.route('/advanced_scrapping/<actionId>', methods=['POST'])
+def advanced_scrapping(actionId):
     html_input = request.form.get('html_format')
     email_input = request.form.get('email_format')
     xpath_input = request.form.get('xpath_format')
@@ -358,9 +338,9 @@ def advanced_scrapping(action_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (action_id))
+    cur.execute("SELECT * FROM urls WHERE ACTION_ID = %s", (actionId))
     urls_rows = cur.fetchall()
-    cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (action_id))
+    cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (actionId))
     action_row = cur.fetchone()
     if action_row[6] == 'mono_link':
         emails = pick_scrapping_method(urls_rows[0][3],email_input,html_input,xpath_input,action_input)   
@@ -369,10 +349,10 @@ def advanced_scrapping(action_id):
                 file_path = 'results/' + str(action_row[0])
                 if os.path.exists(file_path):
                     os.remove(file_path)
-            filename = convert_to_excel(action_id,emails,urls_rows[0][3])
-            cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE ACTION_ID = %s", (len(emails), action_id))
+            filename = convert_to_excel(actionId,emails,urls_rows[0][3])
+            cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE ACTION_ID = %s", (len(emails), actionId))
             conn.commit()
-            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, action_id))
+            cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, actionId))
             conn.commit()
     elif (action_row[6] == 'bulk_text'):
         i = 0
@@ -389,8 +369,8 @@ def advanced_scrapping(action_id):
                 i+=1
         if sum(count_emails)>0:
             if action_row[4] == None:
-                filename = convert_bulk_to_excel(action_id,emails,urls)
-                cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, action_id))
+                filename = convert_bulk_to_excel(actionId,emails,urls)
+                cur.execute("UPDATE action SET ACTION_RESULT = %s WHERE ACTION_ID = %s", (filename, actionId))
                 conn.commit()
             else:
                 update_excel(action_row[4],emails,urls)
@@ -402,11 +382,10 @@ def advanced_scrapping(action_id):
             
     cur.close()
     conn.close()
-    return redirect(url_for('process_result', action_id=action_id))
+    return redirect(url_for('process_result', actionId=actionId))
 
 @app.route('/download_excel/<filename>')
 def download_excel(filename):
-
     folder = 'results/'
     full_path = folder + filename
     return send_file(full_path, as_attachment=True)

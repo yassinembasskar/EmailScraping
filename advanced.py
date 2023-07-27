@@ -40,6 +40,3 @@ def pick_scrapping_method(url,email_input,html_input,xpath_input,action_input):
                 return scrapp_normal_action(url,howto,identifications,xpath_input)
             else:
                 return scrapp_deep_action(url,howto,identifications,email_input,html_input,xpath_input)
-
-action_input = '(click)//*[@id="block-mithr-theme-mithr-theme-system-main"]/div/div/div/ul/li/a'
-url = 'https://hr.mit.edu/staff'

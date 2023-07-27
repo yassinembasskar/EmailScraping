@@ -45,16 +45,9 @@
     </footer>
     <script>
         var login_error = "{{error}}";
-        var username = "{{username}}";
-        var email = "{{email}}";
-        var id = "{{id}}";
         if (login_error != ""){
             alert(login_error);
-            login_error = "";
-        } else {
-            alert("hello "+username+" you are number "+id+" and your email is "+ email);
         }
-    
     </script>
     <script src="{{url_for('static', filename='script.js')}}"></script>
 </body>
