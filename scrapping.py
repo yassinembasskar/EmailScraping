@@ -50,6 +50,7 @@ loadMore: >>>>>DONE
 https://hr.mit.edu/staff    (successful)
 https://www.cuchicago.edu/general-information/faculty-staff-directory/    (successful)
 https://ischool.utoronto.ca/faculty-staff/faculty-staff-directory/       (successful)
+https://www.ntu.edu.sg/newri/our-people/staff-directory#Content_C315_Col00
 
 next: 
 ----
@@ -62,9 +63,8 @@ https://cbe.anu.edu.au/about/staff-directory
 
 one email multi links:
 ----------------------
-https://www.epfl.ch/research/faculty-members/
+https://www.epfl.ch/research/faculty-members/     (this website is weird)
 https://iis.fudan.edu.cn/en/faculty/list.htm
-https://www.ntu.edu.sg/newri/our-people/staff-directory#Content_C315_Col00
 https://www.imperial.ac.uk/school-public-health/environmental-research-group/people/staff-directory/?
 https://www.ucl.ac.uk/history/people/academic-staff
 https://dso.college.harvard.edu/people/people-type/staff?page=2
@@ -88,15 +88,7 @@ absolutely can not be scrapped:
 ------------------------------
 https://www.polytechnique.edu/en/education/academic-and-research-departments/applied-mathematics-department-depmap/
 '''
-def scrapp_website(url,xpath):
-    driver = webdriver.Chrome()
-    driver.get(url)
-    driver.implicitly_wait(5)
-    try:
-        wait = WebDriverWait(driver, 10) 
-        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
-    except:
-        pass
+def scroll_down(driver):
     scroll_height = 0
     prev_scroll_height = 0
     while 1:
@@ -106,6 +98,17 @@ def scrapp_website(url,xpath):
         if scroll_height == prev_scroll_height:
             break
         prev_scroll_height = scroll_height
+
+def scrapp_website(url,xpath):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    driver.implicitly_wait(3)
+    try:
+        wait = WebDriverWait(driver, 10) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    except:
+        pass
+    scroll_down(driver)
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()
@@ -158,13 +161,14 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
     html_input = replace_all(second_part, html_input)
     markers = html_input.split('(\w+)')
     driver = webdriver.Chrome()
-    driver.implicitly_wait(10)
+    driver.implicitly_wait(3)
     driver.get(url)
     try:
         wait = WebDriverWait(driver, 10) 
         wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
     except:
         pass
+    scroll_down(driver)
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()
@@ -189,14 +193,10 @@ def scrapp(body):
 def scrapp_normal_action(url,howto,identifications,xpath):
     driver = webdriver.Chrome()
     driver.get(url)
-    driver.implicitly_wait(5)
-    try:
-        wait = WebDriverWait(driver, 10) 
-        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
-    except:
-        pass
-    scroll_height = 0
-    prev_scroll_height = 0
+    driver.implicitly_wait(2)
+    wait = WebDriverWait(driver, 4) 
+    wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    scroll_down(driver)
     i = 0
     emails = set()
     for how in howto:
@@ -207,21 +207,13 @@ def scrapp_normal_action(url,howto,identifications,xpath):
                 n = identifications[i][j+1:-1]
                 n = int(n)
                 identifications[i] = identifications[i][:j]
+        time.sleep(2)
         if how == 'click':
-            time.sleep(2)
             while n != 0:
                 if n>0:
                     n=n-1
                 try:
-                    time.sleep(2)
-                    while 1:
-                        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                        time.sleep(2)
-                        scroll_height = driver.execute_script("return document.body.scrollHeight")
-                        if scroll_height == prev_scroll_height:
-                            break
-                        prev_scroll_height = scroll_height
-                    
+                    scroll_down(driver)
                     wait = WebDriverWait(driver, 10) 
                     wait.until(EC.presence_of_element_located((By.XPATH, identifications[i])))
                     element = driver.find_element(By.XPATH, identifications[i])
@@ -232,11 +224,84 @@ def scrapp_normal_action(url,howto,identifications,xpath):
                     if not element.is_enabled():
                         break
                     element.click()
-                    time.sleep(5)
+                    time.sleep(3)
                 except:
                     break
         elif how == 'links':
-            pass
+            hasRange = False
+            finPara = identifications[i].find(')')
+            startPara = identifications[i].rfind('(')
+            if (finPara != -1) and (startPara != -1):
+                hasRange = True
+                range_xpath = identifications[i][startPara+1:finPara]
+                if range_xpath.find(':') == -1:
+                    continue
+                range_xpath = range_xpath.split(':')
+                identifications[i] = identifications[i][:startPara+1]  + identifications[i][finPara:]
+                x = range_xpath[0]
+                y = range_xpath[1]
+                try: 
+                    x = int(x)
+                except:
+                    x = 1
+                try: 
+                    y = int(y)
+                except:
+                    y = None
+            while n != 0:
+                if n > 0:
+                    n = n - 1
+                try:
+                    scroll_down(driver)
+                    html_content = driver.find_element(By.TAG_NAME, "body")
+                    result = scrapp(html_content.get_attribute("innerHTML"))
+                    for email in result:
+                        emails.add(email)
+                    if hasRange:
+                        if y != None:
+                            for j in range(x,y):
+                                try:
+                                    time.sleep(2)
+                                    element = driver.find_element(By.XPATH, identifications[i].replace('()',str(j)))
+                                    link_branch = element.get_attribute("href")
+                                    result = scrapp_website(link_branch,xpath)
+                                    for email in result:
+                                        emails.add(email)
+                                    time.sleep(2)
+                                except:
+                                    break
+                        else:
+                            while 1:
+                                try:
+                                    time.sleep(2)
+                                    element = driver.find_element(By.XPATH, identifications[i].replace('()',str(x)))
+                                    link_branch = element.get_attribute("href")
+                                    print(link_branch)
+                                    result = scrapp_website(link_branch,'//body')
+                                    print("hada ra9m "+ str(x))
+                                    x+=1
+                                    for email in result:
+                                        emails.add(email)
+                                    time.sleep(2)
+                                except:
+                                    break
+                    else:
+                        try:
+                            time.sleep(2)
+                            elements = driver.find_elements(By.XPATH, identifications[i])
+                            for element in elements:
+                                try:
+                                    link_branch = element.get_attribute("href")
+                                    result = scrapp_website(link_branch,'//body')
+                                    for email in result:
+                                        emails.add(email)
+                                    time.sleep(2)
+                                except:
+                                    break
+                        except:
+                            pass
+                except:
+                    break
         else:
             break
         i+=1

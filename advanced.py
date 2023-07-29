@@ -20,7 +20,7 @@ def pick_scrapping_method(url,email_input,html_input,xpath_input,action_input):
         identifications = []
         for action in actions:
             if action.startswith('(links)'):
-                howto.append('(links)')   
+                howto.append('links')   
             elif action.startswith('(click)'):
                     howto.append('click')
             else:
@@ -40,3 +40,6 @@ def pick_scrapping_method(url,email_input,html_input,xpath_input,action_input):
                 return scrapp_normal_action(url,howto,identifications,xpath_input)
             else:
                 return scrapp_deep_action(url,howto,identifications,email_input,html_input,xpath_input)
+
+
+
