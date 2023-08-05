@@ -5,6 +5,7 @@ from selenium import webdriver
 import re
 import requests, time
 from selenium.common.exceptions import NoSuchElementException
+import pyautogui
 
 '''
 not successful website to scrapp:
@@ -108,7 +109,10 @@ def scrapp_website(url,xpath):
         wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
     except:
         pass
-    scroll_down(driver)
+    try:
+        scroll_down(driver)
+    except:
+        pass
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()
@@ -190,121 +194,103 @@ def scrapp(body):
         emails.add(match.group())
     return emails
 
-def scrapp_normal_action(url,howto,identifications,xpath):
-    driver = webdriver.Chrome()
-    driver.get(url)
-    driver.implicitly_wait(2)
-    wait = WebDriverWait(driver, 4) 
-    wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
-    scroll_down(driver)
+def loading(driver,action):
+    try:
+        wait = WebDriverWait(driver, 10) 
+        wait.until(EC.presence_of_element_located((By.XPATH, action)))
+        element = driver.find_element(By.XPATH, action)
+        if element.is_enabled() and element != NULL:
+            element.click()
+            time.sleep(3)
+            return True
+        else:
+            return False
+    except:
+        return False
+        
+
+def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
+    try:
+        driver = webdriver.Chrome()
+        driver.get(url)
+        driver.implicitly_wait(2)
+        wait = WebDriverWait(driver, 4) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+        scroll_down(driver)
+    except:
+        pass
     i = 0
     emails = set()
-    for how in howto:
-        n=-1
-        if identifications[i].endswith(')'):
-            j = identifications[i].rfind('(')
-            if j != -1:
-                n = identifications[i][j+1:-1]
-                n = int(n)
-                identifications[i] = identifications[i][:j]
-        time.sleep(2)
-        if how == 'click':
+    if actionTypeInput == 'load' or actionInput == 'next':
+        for action in actionInput:
+            n=-1
+            if action.endswith(')'):
+                j = action.rfind('(')
+                if j != -1:
+                    n = action[j+1:-1]
+                    n = int(n)
+                    action = action[:j]
             while n != 0:
                 if n>0:
                     n=n-1
                 try:
                     scroll_down(driver)
-                    wait = WebDriverWait(driver, 10) 
-                    wait.until(EC.presence_of_element_located((By.XPATH, identifications[i])))
-                    element = driver.find_element(By.XPATH, identifications[i])
                     html_content = driver.find_element(By.TAG_NAME, "body")
                     result = scrapp(html_content.get_attribute("innerHTML"))
                     for email in result:
                         emails.add(email)
-                    if not element.is_enabled():
+                    elementExist = loading(driver,action)
+                    if not elementExist:
                         break
-                    element.click()
-                    time.sleep(3)
                 except:
                     break
-        elif how == 'links':
-            hasRange = False
-            finPara = identifications[i].find(')')
-            startPara = identifications[i].rfind('(')
-            if (finPara != -1) and (startPara != -1):
-                hasRange = True
-                range_xpath = identifications[i][startPara+1:finPara]
-                if range_xpath.find(':') == -1:
-                    continue
-                range_xpath = range_xpath.split(':')
-                identifications[i] = identifications[i][:startPara+1]  + identifications[i][finPara:]
-                x = range_xpath[0]
-                y = range_xpath[1]
-                try: 
-                    x = int(x)
-                except:
-                    x = 1
-                try: 
-                    y = int(y)
-                except:
-                    y = None
+    elif actionTypeInput == 'links':
+        for action in actionInput:
+            try:
+                elements = driver.find_elements(By.XPATH, action)
+                for element in elements:
+                    link_branch = element.get_attribute("href")
+                    result = scrapp_website(link_branch,'//body')
+                    for email in result:
+                        emails.add(email)
+                    time.sleep(2)
+            except:
+                break
+    elif actionTypeInput == 'links-load' or actionTypeInput == 'links-next':
+        seperatingLinksClick = actionInput.index('////')
+        try:
+            links = actionInput[:seperatingLinksClick]
+            clicks = actionInput[seperatingLinksClick+1:]
+        except:
+            return []
+        for click in clicks:
+            n=-1
+            if click.endswith(')'):
+                j = click.rfind('(')
+                if j != -1:
+                    n = click[j+1:-1]
+                    n = int(n)
+                    click = click[:j]
             while n != 0:
-                if n > 0:
-                    n = n - 1
+                if n>0:
+                    n=n-1
                 try:
                     scroll_down(driver)
                     html_content = driver.find_element(By.TAG_NAME, "body")
-                    result = scrapp(html_content.get_attribute("innerHTML"))
-                    for email in result:
-                        emails.add(email)
-                    if hasRange:
-                        if y != None:
-                            for j in range(x,y):
-                                try:
-                                    time.sleep(2)
-                                    element = driver.find_element(By.XPATH, identifications[i].replace('()',str(j)))
-                                    link_branch = element.get_attribute("href")
-                                    result = scrapp_website(link_branch,xpath)
-                                    for email in result:
-                                        emails.add(email)
-                                    time.sleep(2)
-                                except:
-                                    break
-                        else:
-                            while 1:
-                                try:
-                                    time.sleep(2)
-                                    element = driver.find_element(By.XPATH, identifications[i].replace('()',str(x)))
-                                    link_branch = element.get_attribute("href")
-                                    print(link_branch)
-                                    result = scrapp_website(link_branch,'//body')
-                                    print("hada ra9m "+ str(x))
-                                    x+=1
-                                    for email in result:
-                                        emails.add(email)
-                                    time.sleep(2)
-                                except:
-                                    break
-                    else:
-                        try:
+                    for link in links:
+                        elements = driver.find_elements(By.XPATH, link)
+                        for element in elements:
+                            link_branch = element.get_attribute("href")
+                            result = scrapp_website(link_branch,'//body')
+                            for email in result:
+                                emails.add(email)
                             time.sleep(2)
-                            elements = driver.find_elements(By.XPATH, identifications[i])
-                            for element in elements:
-                                try:
-                                    link_branch = element.get_attribute("href")
-                                    result = scrapp_website(link_branch,'//body')
-                                    for email in result:
-                                        emails.add(email)
-                                    time.sleep(2)
-                                except:
-                                    break
-                        except:
-                            pass
+                    elements = driver.find_element(By.XPATH, click)
+                    elementExist = loading(driver,action)
+                    if not elementExist:
+                        break
                 except:
                     break
-        else:
-            break
-        i+=1
+    time.sleep(2)
     return emails
     
-            

@@ -45,7 +45,7 @@
                 <p>the links that did not show up cannot be scrapped</p>
             </div>
             {%if sumEmailsNumb|string|int > 0 %}
-            <a href="{{ url_for('download_excel', filename=result) }}" download>
+            <a href="{{ url_for('download_excel', filename=resultPath) }}" download>
                 <button type="button">Download</button>
             </a>
             {%endif%}
@@ -59,9 +59,17 @@
                     <a onclick="show_details()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <div class="click_action">
-                    <input placeholder="Enter the selector ..." autocomplete="off" type="text" name="action_input" id="action_input">
+                    <select name="action_type" id="action_type">
+                        <option value=""></option>
+                        <option value="load">Load</option>
+                        <option value="next">Next</option>
+                        <option value="links">Links</option>
+                        <option value="links-load">Links-load</option>
+                        <option value="links-next">Links-next</option>
+                    </select>
                     <a onclick="show_details_2()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
+                <textarea placeholder="Enter the selector ..." name="action_input" id="action_input"></textarea>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">
             </form>
             <div class="a_container one_link">

@@ -126,7 +126,10 @@ def process_onelink_action():
     if ('username' in session and 'email' in session and 'userId' in session):
         #scrapp the enteredUrl and count the scrapped emails
         enteredUrl = request.form.get('url_input')
-        scrappedEmails = scrapp_website(enteredUrl,'//body')
+        try:
+            scrappedEmails = scrapp_website(enteredUrl,'//body')         
+        except:
+            scrappedEmails = []
         countScrappedEmails = len(scrappedEmails)
         userId = session['userId']
         currentDate = datetime.date.today()
@@ -188,7 +191,10 @@ def process_bulktext_action():
             countScrappedEmails = []
             i = 0
             for url in validUrls:
-                scrappedEmails.append(scrapp_website(url,'//body'))
+                try:
+                    scrappedEmails.append(scrapp_website(url,'//body'))
+                except:
+                    scrappedEmails.append([])
                 countScrappedEmails.append(len(scrappedEmails[i]))
                 i += 1
             userId = session['userId']
@@ -330,10 +336,11 @@ def process_result(actionId):
 
 @app.route('/advanced_scrapping/<actionId>', methods=['POST'])
 def advanced_scrapping(actionId):
-    html_input = request.form.get('html_format')
-    email_input = request.form.get('email_format')
-    xpath_input = request.form.get('xpath_format')
-    action_input = request.form.get('action_input')
+    htmlInput = request.form.get('html_format')
+    emailInput = request.form.get('email_format')
+    xpathInput = request.form.get('xpath_format')
+    actionTypeInput = request.form.get('action_type')
+    actionInput = request.form.get('action_input')
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -343,12 +350,12 @@ def advanced_scrapping(actionId):
     cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (actionId))
     action_row = cur.fetchone()
     if action_row[6] == 'mono_link':
-        emails = pick_scrapping_method(urls_rows[0][3],email_input,html_input,xpath_input,action_input)   
+        emails = pick_scrapping_method(urls_rows[0][3],emailInput,htmlInput,xpathInput,actionTypeInput,actionInput)   
         if len(emails) > urls_rows[0][4]:
             if urls_rows[0][4] > 0:
-                file_path = 'results/' + str(action_row[0])
-                if os.path.exists(file_path):
-                    os.remove(file_path)
+                filePath = 'results/' + str(action_row[0])
+                if os.path.exists(filePath):
+                    os.remove(filePath)
             filename = convert_to_excel(actionId,emails,urls_rows[0][3])
             cur.execute("UPDATE urls SET URL_EMAILS = %s WHERE ACTION_ID = %s", (len(emails), actionId))
             conn.commit()
@@ -358,10 +365,10 @@ def advanced_scrapping(actionId):
         i = 0
         urls = []
         emails = []
-        count_emails = []
+        countEmails = []
         for row in urls_rows:
             url = row[3]
-            email = list(pick_scrapping_method(url,email_input,html_input,xpath_input,action_input))
+            email = list(pick_scrapping_method(url,emailInput,htmlInput,xpathInput,actionTypeInput,actionInput))
             if len(email) > row[4]:
                 urls.append(url)
                 emails.append(email)

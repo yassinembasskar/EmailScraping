@@ -322,6 +322,9 @@ select {
     height: fit-content;
     padding: 9px;
     border: #A8DADC 1px solid;
+    border-radius: 5px;
+    flex-grow: 1;
+    margin: 5px;
 }
 
 a.details_icon {

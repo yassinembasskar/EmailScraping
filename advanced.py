@@ -1,20 +1,37 @@
 from scrapping import *
 
 
-def pick_scrapping_method(url,email_input,html_input,xpath_input,action_input):
-    if action_input.replace(' ','') == '':
-        if xpath_input.replace(' ','') == '':
-            if html_input.replace(' ', '') == '' or email_input.replace(' ', ''):
+def pick_scrapping_method(url,emailInput,htmlInput,xpathInput,actionTypeInput,actionInput):
+    if actionInput.replace(' ','') == '' or actionTypeInput == '':
+        if xpathInput.replace(' ','') == '':
+            if htmlInput.replace(' ', '') == '' or emailInput.replace(' ', ''):
                 return []
             else:
-                return scrapp_deep(url,email_input,html_input,'//body')
+                return scrapp_deep(url,emailInput,htmlInput,'//body')
         else:
-            if html_input.replace(' ', '') == '' or email_input.replace(' ', ''):
-                return scrapp_website(url,xpath_input)
+            if htmlInput.replace(' ', '') == '' or emailInput.replace(' ', ''):
+                return scrapp_website(url,xpathInput)
             else:
-                return scrapp_deep(url,email_input,html_input,xpath_input)
+                return scrapp_deep(url,emailInput,htmlInput,xpathInput)
     else:
-        actions = action_input
+        actionInput = actionInput.split('\n')
+        actionInput = [action.replace(' ','') for action in actionInput]
+        actionInput = [action.replace('\r','') for action in actionInput]
+        actionInput = [action for action in actionInput if action.startswith('//')]
+        if xpathInput.replace(' ','') == '':
+            if htmlInput.replace(' ', '') == '' or emailInput.replace(' ', ''):
+                return scrapp_normal_action(url,actionTypeInput,actionInput,'//body')
+            else:
+                return scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,'//body')
+        else:
+            if htmlInput.replace(' ', '') == '' or emailInput.replace(' ', ''):
+                return scrapp_normal_action(url,actionTypeInput,actionInput,xpathInput)
+            else:
+                return scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpathInput)
+
+
+
+'''actions = action_input
         actions = actions.split(' ')
         howto = []
         identifications = []
@@ -29,17 +46,4 @@ def pick_scrapping_method(url,email_input,html_input,xpath_input,action_input):
             if action.startswith('//'):
                 identifications.append(action)
             else:
-                break
-        if xpath_input.replace(' ','') == '':
-            if html_input.replace(' ', '') == '' or email_input.replace(' ', ''):
-                return scrapp_normal_action(url,howto,identifications,'//body')
-            else:
-                return scrapp_deep_action(url,howto,identifications,email_input,html_input,'//body')
-        else:
-            if html_input.replace(' ', '') == '' or email_input.replace(' ', ''):
-                return scrapp_normal_action(url,howto,identifications,xpath_input)
-            else:
-                return scrapp_deep_action(url,howto,identifications,email_input,html_input,xpath_input)
-
-
-
+                break'''
