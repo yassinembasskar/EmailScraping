@@ -7,88 +7,6 @@ import requests, time
 from selenium.common.exceptions import NoSuchElementException
 import pyautogui
 
-'''
-not successful website to scrapp:
----------------------------------
-
-
-=====>  https://www.ucm.es/teorica/staff  (you should auto complete the emails) very hard to solve but possible for the interface
-
-====>http://anatomi.medicine.ankara.edu.tr/en/academic-staff/ 
-
-
-solved problems and now can ve scrapped:
----------------------------------------
-
-====> https://research-information.bris.ac.uk/en/persons/
-      https://www.cs.washington.edu/people/staff (seperating email format) solved in scrapp_again()
-
-====> https://stanfordwho.stanford.edu/people solved just by scrolling
-
-very easy to scrapp websites:
------------------------------
-
-https://www.uic.es/en/contacts-directory
-https://gsehd.gwu.edu/directory
-http://www.aui.ma/en/sba/2-aui-pages/2224-aui-contact-us.html
-https://www.birmingham.ac.uk/research/metabolism-systems/staff/a-z-staff-list.aspx
-https://www.birmingham.ac.uk/schools/education/staff/index.aspx
-https://www.ed.ac.uk/education/about-us/people/academic-staff-a-z
-http://www.narg.org.uk/people-and-partners/staff-directory/
-https://gostanford.com/staff-directory
-https://macis.gess.ethz.ch/people.html
-https://www.nus.edu.sg/celc/academic-staff-full-time/#administrative-staff
-https://pennathletics.com/staff-directory
-https://cornellrams.com/staff-directory?path=staff
-https://leadersandbest.umich.edu/contact/directory
-https://ecse.postech.ac.kr/member/professor/
-'''
-'''
-testing websites:
-================
-loadMore: >>>>>DONE
---------
-https://hr.mit.edu/staff    (successful)
-https://www.cuchicago.edu/general-information/faculty-staff-directory/    (successful)
-https://ischool.utoronto.ca/faculty-staff/faculty-staff-directory/       (successful)
-https://www.ntu.edu.sg/newri/our-people/staff-directory#Content_C315_Col00
-
-next: 
-----
-https://www.tudelft.nl/en/about-tu-delft/find-employees     (successful)
-https://www.cambridgecollege.edu/faculty-and-staff/regional
-https://www.lib.berkeley.edu/help/staff-directory
-https://library.princeton.edu/staff/directory
-https://www.rciti.unsw.edu.au/staff-directory
-https://cbe.anu.edu.au/about/staff-directory
-
-one email multi links:
-----------------------
-https://www.epfl.ch/research/faculty-members/     (this website is weird)
-https://iis.fudan.edu.cn/en/faculty/list.htm
-https://www.imperial.ac.uk/school-public-health/environmental-research-group/people/staff-directory/?
-https://www.ucl.ac.uk/history/people/academic-staff
-https://dso.college.harvard.edu/people/people-type/staff?page=2
-https://www.conted.ox.ac.uk/profiles#?subject=&format=
-https://www.unsw.edu.au/law-justice/about-us/our-people/staff-directory
-https://www.sydney.edu.au/science/about/our-people/academic-staff.html
-https://www.lse.ac.uk/economics/people/faculty
-
-one email one link in multi links:
----------------------------------
-https://english.yale.edu/people/faculty
-
-combination of two:
-------------------
-https://publichealth.jhu.edu/faculty/directory/list?display_type=tablefaculty-members (multi links and incryptation)
-https://www.ualberta.ca/science/programs/create/atums/team/u-of-a-students/index.html (encryptation and click)
-https://www.kcl.ac.uk/people (next and multilinks)
-https://research.monash.edu/en/persons/ (encryptation and next)
-
-absolutely can not be scrapped:
-------------------------------
-https://www.polytechnique.edu/en/education/academic-and-research-departments/applied-mathematics-department-depmap/
-'''
 def scroll_down(driver):
     scroll_height = 0
     prev_scroll_height = 0
@@ -187,6 +105,18 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
         emails.add(match.group())
     return emails
 
+def scrapp_advanced(markers,body):
+    body = body.replace(" ", "")
+    body = body.replace("\n", "")
+    body = body.replace(markers[0], '@')
+    emails = set()
+    for i in range(1,len(markers)-1):
+        body = body.replace(markers[i], '.')
+    pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
+    for match in re.finditer(pattern, body):
+        emails.add(match.group())
+    return emails
+
 def scrapp(body):
     emails = set()
     pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
@@ -199,7 +129,7 @@ def loading(driver,action):
         wait = WebDriverWait(driver, 10) 
         wait.until(EC.presence_of_element_located((By.XPATH, action)))
         element = driver.find_element(By.XPATH, action)
-        if element.is_enabled() and element != NULL:
+        if element.is_enabled() and element != None:
             element.click()
             time.sleep(3)
             return True
@@ -221,7 +151,7 @@ def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
         pass
     i = 0
     emails = set()
-    if actionTypeInput == 'load' or actionInput == 'next':
+    if actionTypeInput == 'click':
         for action in actionInput:
             n=-1
             if action.endswith(')'):
@@ -256,7 +186,7 @@ def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
                     time.sleep(2)
             except:
                 break
-    elif actionTypeInput == 'links-load' or actionTypeInput == 'links-next':
+    elif actionTypeInput == 'links-click' :
         seperatingLinksClick = actionInput.index('////')
         try:
             links = actionInput[:seperatingLinksClick]
@@ -294,3 +224,95 @@ def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
     time.sleep(2)
     return emails
     
+def scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpathInput):
+    emailInput = emailInput.split('@')
+    first_part = emailInput[0]
+    second_part = emailInput[1]
+    htmlInput = htmlInput.replace(" ", "")
+    htmlInput = htmlInput.replace("\n", "")
+    second_part = second_part.split('.')
+    htmlInput = remove_first(first_part, htmlInput)
+    htmlInput = replace_all(second_part, htmlInput)
+    markers = htmlInput.split('(\w+)')
+    try:
+        driver = webdriver.Chrome()
+        driver.get(url)
+        driver.implicitly_wait(2)
+        wait = WebDriverWait(driver, 4) 
+        wait.until(EC.presence_of_element_located((By.XPATH, xpathInput)))
+        scroll_down(driver)
+    except:
+        pass
+    i = 0
+    emails = set()
+    if actionTypeInput == 'load' or actionTypeInput == 'next':
+        for action in actionInput:
+            n=-1
+            if action.endswith(')'):
+                j = action.rfind('(')
+                if j != -1:
+                    n = action[j+1:-1]
+                    n = int(n)
+                    action = action[:j]
+            while n != 0:
+                if n>0:
+                    n=n-1
+                try:
+                    html_content = driver.find_element(By.TAG_NAME, "body")
+                    result = scrapp_advanced(markers,html_content.get_attribute("innerHTML"))
+                    for email in result:
+                        emails.add(email)
+                    elementExist = loading(driver,action)
+                    if not elementExist:
+                        break
+                except:
+                    break
+    elif actionTypeInput == 'links':
+        for action in actionInput:
+            try:
+                elements = driver.find_elements(By.XPATH, action)
+                for element in elements:
+                    link_branch = element.get_attribute("href")
+                    result = scrapp_deep(link_branch,emailInput,htmlInput,'//body')
+                    for email in result:
+                        emails.add(email)
+                    time.sleep(2)
+            except:
+                break
+    elif actionTypeInput == 'links-load' or actionTypeInput == 'links-next':
+        seperatingLinksClick = actionInput.index('////')
+        try:
+            links = actionInput[:seperatingLinksClick]
+            clicks = actionInput[seperatingLinksClick+1:]
+        except:
+            return []
+        for click in clicks:
+            n=-1
+            if click.endswith(')'):
+                j = click.rfind('(')
+                if j != -1:
+                    n = click[j+1:-1]
+                    n = int(n)
+                    click = click[:j]
+            while n != 0:
+                if n>0:
+                    n=n-1
+                try:
+                    scroll_down(driver)
+                    html_content = driver.find_element(By.TAG_NAME, "body")
+                    for link in links:
+                        elements = driver.find_elements(By.XPATH, link)
+                        for element in elements:
+                            link_branch = element.get_attribute("href")
+                            result = scrapp_deep(link_branch,emailInput,htmlInput,'//body')
+                            for email in result:
+                                emails.add(email)
+                            time.sleep(2)
+                    elements = driver.find_element(By.XPATH, click)
+                    elementExist = loading(driver,action)
+                    if not elementExist:
+                        break
+                except:
+                    break
+    time.sleep(2)
+    return emails

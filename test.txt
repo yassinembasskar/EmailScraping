@@ -1,0 +1,70 @@
+very easy to scrapp websites:
+-----------------------------
+
+https://www.uic.es/en/contacts-directory
+https://gsehd.gwu.edu/directory
+http://www.aui.ma/en/sba/2-aui-pages/2224-aui-contact-us.html
+https://www.birmingham.ac.uk/research/metabolism-systems/staff/a-z-staff-list.aspx
+https://www.birmingham.ac.uk/schools/education/staff/index.aspx
+https://www.ed.ac.uk/education/about-us/people/academic-staff-a-z
+http://www.narg.org.uk/people-and-partners/staff-directory/
+https://gostanford.com/staff-directory
+https://macis.gess.ethz.ch/people.html
+https://www.nus.edu.sg/celc/academic-staff-full-time/#administrative-staff
+https://pennathletics.com/staff-directory
+https://cornellrams.com/staff-directory?path=staff
+https://leadersandbest.umich.edu/contact/directory
+https://ecse.postech.ac.kr/member/professor/
+
+https://stanfordwho.stanford.edu/people (solved just by scrollin)
+
+
+encryption:
+------------
+
+https://www.cs.washington.edu/people/staff
+https://www.ualberta.ca/science/programs/create/atums/team/u-of-a-students/index.html 
+
+
+
+loadMore: 
+--------
+https://hr.mit.edu/staff    (successful)
+https://www.cuchicago.edu/general-information/faculty-staff-directory/    (successful)
+https://ischool.utoronto.ca/faculty-staff/faculty-staff-directory/       (successful)
+https://www.ntu.edu.sg/newri/our-people/staff-directory#Content_C315_Col00
+
+next: 
+----
+https://www.tudelft.nl/en/about-tu-delft/find-employees     (successful)
+https://www.cambridgecollege.edu/faculty-and-staff/regional
+https://www.lib.berkeley.edu/help/staff-directory
+https://library.princeton.edu/staff/directory
+https://www.rciti.unsw.edu.au/staff-directory
+https://cbe.anu.edu.au/about/staff-directory
+http://anatomi.medicine.ankara.edu.tr/en/academic-staff/ 
+
+one email multi links:
+----------------------
+https://www.epfl.ch/research/faculty-members/     (this website is weird)
+https://iis.fudan.edu.cn/en/faculty/list.htm
+https://www.imperial.ac.uk/school-public-health/environmental-research-group/people/staff-directory/?
+https://www.ucl.ac.uk/history/people/academic-staff
+https://dso.college.harvard.edu/people/people-type/staff?page=2
+https://www.conted.ox.ac.uk/profiles#?subject=&format=
+https://www.unsw.edu.au/law-justice/about-us/our-people/staff-directory
+https://www.sydney.edu.au/science/about/our-people/academic-staff.html
+https://www.lse.ac.uk/economics/people/faculty
+
+
+combination of two:
+------------------
+https://publichealth.jhu.edu/faculty/directory/list?display_type=tablefaculty-members (multi links and next)
+https://www.kcl.ac.uk/people (next and multilinks)
+
+not yet solved:
+------------------------------
+https://research.monash.edu/en/persons/?format= (z-index)
+https://research-information.bris.ac.uk/en/persons/ (z-index)
+https://www.ucm.es/teorica/staff  (you should auto complete the emails) 
+https://english.yale.edu/people/faculty  (one email one link in multi links)
