@@ -247,7 +247,6 @@ def historique():
                 actionDate = row[2]
         cur.close()
         conn.close()
-        print(sortedActions)
         return render_template('historique.html', username=username, email=email, userId=userId, error=error, actions = sortedActions)
     else:
         return redirect(url_for('logout'))
