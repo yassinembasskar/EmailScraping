@@ -12,7 +12,6 @@ https://gostanford.com/staff-directory
 https://macis.gess.ethz.ch/people.html
 https://www.nus.edu.sg/celc/academic-staff-full-time/#administrative-staff
 https://pennathletics.com/staff-directory
-https://cornellrams.com/staff-directory?path=staff
 https://leadersandbest.umich.edu/contact/directory
 https://ecse.postech.ac.kr/member/professor/
 
@@ -68,3 +67,8 @@ https://research.monash.edu/en/persons/?format= (z-index)
 https://research-information.bris.ac.uk/en/persons/ (z-index)
 https://www.ucm.es/teorica/staff  (you should auto complete the emails) 
 https://english.yale.edu/people/faculty  (one email one link in multi links)
+
+connexion promlems:
+-------------------
+
+https://cornellrams.com/staff-directory?path=staff

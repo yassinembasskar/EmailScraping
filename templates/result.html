@@ -51,9 +51,8 @@
             {%endif%}
             </div>
             <form class="seperator" action="{{ url_for('advanced_scrapping', actionId=actionId) }}" method="post">
-                <p style="color: black;padding: 5px 10px;"><span>advanced search:</span></p>
+                <p style="color: black;padding: 5px 10px;"><span>Advanced Scrapping:</span></p>
                 <textarea name="html_format" id="html_format" placeholder="Enter the emails format in html ..."></textarea>
-                <input autocomplete="off" type="text" name="xpath_format" id="xpath_format" placeholder="Enter the xpath format ..."></input>
                 <div class="seperator_input">
                     <input placeholder="Enter the Email..." autocomplete="off" type="text" name="email_format" id="email_format">
                     <a onclick="show_details()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
@@ -63,9 +62,8 @@
                         <option value=""></option>
                         <option value="click">click</option>
                         <option value="links">Links</option>
-                        <option value="links-load">Links-click</option>
+                        <option value="links-click">Links-click</option>
                     </select>
-                    <a onclick="show_details_2()" class="details_icon"><img src="{{url_for('static', filename='images/question.png')}}"></a>
                 </div>
                 <textarea placeholder="Enter the selector ..." name="action_input" id="action_input"></textarea>
                 <input type="submit" value="Convert" name="submit_seperator" id="submit_seperator">
@@ -80,57 +78,7 @@
             <button onclick="hide_details()" class="close_details"><img src="{{url_for('static', filename='images/x .png')}}"></button>
         </div>
         <div id="images_container" class="images_container">
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_1.png')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_2.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_3.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_4.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_5.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/click_details/image_6.jpeg')}}">
-            </div>
-        </div>
-        <div class="image_nav">
-            <button onclick="previous()" >Previous</button>
-            <button onclick="next()">Next</button>
-        </div>
-    </section>
-    <section id="details_section_2" class="details not_exist container">
-        <div class="close_container">
-            <button onclick="hide_details_2()" class="close_details"><img src="{{url_for('static', filename='images/x .png')}}"></button>
-        </div>
-        <div id="images_container" class="images_container">
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_1.png')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_2.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_3.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_4.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_5.jpeg')}}">
-            </div>
-            <div class="image">
-                <img src="{{url_for('static', filename='images/details_sepetator/image_6.jpeg')}}">
-            </div>
-        </div>
-        <div class="image_nav">
-            <button onclick="previous()" >Previous</button>
-            <button onclick="next()">Next</button>
+            
         </div>
     </section>
     <footer>

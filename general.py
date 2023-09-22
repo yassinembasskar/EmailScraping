@@ -126,10 +126,7 @@ def process_onelink_action():
     if ('username' in session and 'email' in session and 'userId' in session):
         #scrapp the enteredUrl and count the scrapped emails
         enteredUrl = request.form.get('url_input')
-        try:
-            scrappedEmails = scrapp_website(enteredUrl,'//body')         
-        except:
-            scrappedEmails = []
+        scrappedEmails = scrapp_website(enteredUrl,'//body')
         countScrappedEmails = len(scrappedEmails)
         userId = session['userId']
         currentDate = datetime.date.today()
@@ -237,7 +234,7 @@ def historique():
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM action WHERE USER_ID = %s ORDER BY ACTION_DATE DESC, ACTION_TIME DESC", (userId))
+        cur.execute("SELECT * FROM action WHERE USER_ID = %s ORDER BY ACTION_ID DESC", (userId))
         userActions = cur.fetchall()
         #sort the actions to be an array that contains arrays that have the same date
         sortedActions = []
@@ -247,10 +244,10 @@ def historique():
                 sortedActions[-1].append(row)
             else:
                 sortedActions.append([row])
-                action_date = row[2]
+                actionDate = row[2]
         cur.close()
         conn.close()
-
+        print(sortedActions)
         return render_template('historique.html', username=username, email=email, userId=userId, error=error, actions = sortedActions)
     else:
         return redirect(url_for('logout'))
@@ -338,7 +335,6 @@ def process_result(actionId):
 def advanced_scrapping(actionId):
     htmlInput = request.form.get('html_format')
     emailInput = request.form.get('email_format')
-    xpathInput = request.form.get('xpath_format')
     actionTypeInput = request.form.get('action_type')
     actionInput = request.form.get('action_input')
     
@@ -350,7 +346,7 @@ def advanced_scrapping(actionId):
     cur.execute("SELECT * FROM action WHERE ACTION_ID = %s", (actionId))
     action_row = cur.fetchone()
     if action_row[6] == 'mono_link':
-        emails = pick_scrapping_method(urls_rows[0][3],emailInput,htmlInput,xpathInput,actionTypeInput,actionInput)   
+        emails = pick_scrapping_method(urls_rows[0][3],emailInput,htmlInput,actionTypeInput,actionInput)   
         if len(emails) > urls_rows[0][4]:
             if urls_rows[0][4] > 0:
                 filePath = 'results/' + str(action_row[0])
@@ -368,7 +364,7 @@ def advanced_scrapping(actionId):
         countEmails = []
         for row in urls_rows:
             url = row[3]
-            email = list(pick_scrapping_method(url,emailInput,htmlInput,xpathInput,actionTypeInput,actionInput))
+            email = list(pick_scrapping_method(url,emailInput,htmlInput,actionTypeInput,actionInput))
             if len(email) > row[4]:
                 urls.append(url)
                 emails.append(email)

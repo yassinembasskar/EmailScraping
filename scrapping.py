@@ -5,6 +5,8 @@ from selenium import webdriver
 import re
 import requests, time
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 import pyautogui
 
 def scroll_down(driver):
@@ -12,25 +14,22 @@ def scroll_down(driver):
     prev_scroll_height = 0
     while 1:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
         scroll_height = driver.execute_script("return document.body.scrollHeight")
         if scroll_height == prev_scroll_height:
             break
         prev_scroll_height = scroll_height
 
 def scrapp_website(url,xpath):
-    driver = webdriver.Chrome()
+    path = "driver/chromedriver.exe"
+    binary_path = "driver/chrome-win64/chrome.exe"
+    chrome_options = Options()
+    chrome_options.binary_location = binary_path
+    chrome_service = Service(executable_path=path)
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
     driver.get(url)
-    driver.implicitly_wait(3)
-    try:
-        wait = WebDriverWait(driver, 10) 
-        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
-    except:
-        pass
-    try:
-        scroll_down(driver)
-    except:
-        pass
+    wait = WebDriverWait(driver, 2) 
+    wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    scroll_down(driver)
     html_content = driver.find_element(By.TAG_NAME, "body")
     body = html_content.get_attribute("innerHTML")
     driver.quit()
@@ -82,11 +81,15 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
     html_input = remove_first(first_part, html_input)
     html_input = replace_all(second_part, html_input)
     markers = html_input.split('(\w+)')
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(3)
+    path = "driver/chromedriver.exe"
+    binary_path = "driver/chrome-win64/chrome.exe"
+    chrome_options = Options()
+    chrome_options.binary_location = binary_path
+    chrome_service = Service(executable_path=path)
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
     driver.get(url)
     try:
-        wait = WebDriverWait(driver, 10) 
+        wait = WebDriverWait(driver, 5) 
         wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
     except:
         pass
@@ -126,7 +129,7 @@ def scrapp(body):
 
 def loading(driver,action):
     try:
-        wait = WebDriverWait(driver, 10) 
+        wait = WebDriverWait(driver, 5) 
         wait.until(EC.presence_of_element_located((By.XPATH, action)))
         element = driver.find_element(By.XPATH, action)
         if element.is_enabled() and element != None:
@@ -137,18 +140,18 @@ def loading(driver,action):
             return False
     except:
         return False
-        
 
 def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
-    try:
-        driver = webdriver.Chrome()
-        driver.get(url)
-        driver.implicitly_wait(2)
-        wait = WebDriverWait(driver, 4) 
-        wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
-        scroll_down(driver)
-    except:
-        pass
+    path = "driver/chromedriver.exe"
+    binary_path = "driver/chrome-win64/chrome.exe"
+    chrome_options = Options()
+    chrome_options.binary_location = binary_path
+    chrome_service = Service(executable_path=path)
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+    driver.get(url)
+    wait = WebDriverWait(driver, 5) 
+    wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
+    scroll_down(driver)
     i = 0
     emails = set()
     if actionTypeInput == 'click':
@@ -183,7 +186,6 @@ def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
                     result = scrapp_website(link_branch,'//body')
                     for email in result:
                         emails.add(email)
-                    time.sleep(2)
             except:
                 break
     elif actionTypeInput == 'links-click' :
@@ -214,7 +216,6 @@ def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
                             result = scrapp_website(link_branch,'//body')
                             for email in result:
                                 emails.add(email)
-                            time.sleep(2)
                     elements = driver.find_element(By.XPATH, click)
                     elementExist = loading(driver,action)
                     if not elementExist:
@@ -234,15 +235,16 @@ def scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpat
     htmlInput = remove_first(first_part, htmlInput)
     htmlInput = replace_all(second_part, htmlInput)
     markers = htmlInput.split('(\w+)')
-    try:
-        driver = webdriver.Chrome()
-        driver.get(url)
-        driver.implicitly_wait(2)
-        wait = WebDriverWait(driver, 4) 
-        wait.until(EC.presence_of_element_located((By.XPATH, xpathInput)))
-        scroll_down(driver)
-    except:
-        pass
+    path = "driver/chromedriver.exe"
+    binary_path = "driver/chrome-win64/chrome.exe"
+    chrome_options = Options()
+    chrome_options.binary_location = binary_path
+    chrome_service = Service(executable_path=path)
+    driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+    driver.get(url)
+    wait = WebDriverWait(driver, 5) 
+    wait.until(EC.presence_of_element_located((By.XPATH, xpathInput)))
+    scroll_down(driver)
     i = 0
     emails = set()
     if actionTypeInput == 'load' or actionTypeInput == 'next':
@@ -276,7 +278,6 @@ def scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpat
                     result = scrapp_deep(link_branch,emailInput,htmlInput,'//body')
                     for email in result:
                         emails.add(email)
-                    time.sleep(2)
             except:
                 break
     elif actionTypeInput == 'links-load' or actionTypeInput == 'links-next':
@@ -307,12 +308,10 @@ def scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpat
                             result = scrapp_deep(link_branch,emailInput,htmlInput,'//body')
                             for email in result:
                                 emails.add(email)
-                            time.sleep(2)
                     elements = driver.find_element(By.XPATH, click)
                     elementExist = loading(driver,action)
                     if not elementExist:
                         break
                 except:
                     break
-    time.sleep(2)
     return emails
