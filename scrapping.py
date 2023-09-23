@@ -21,7 +21,7 @@ def scroll_down(driver):
 
 def scrapp_website(url,xpath):
     path = "driver/chromedriver.exe"
-    binary_path = "driver/chrome-win64/chrome.exe"
+    binary_path = "driver/chrome-test/chrome.exe"
     chrome_options = Options()
     chrome_options.binary_location = binary_path
     chrome_service = Service(executable_path=path)
@@ -82,7 +82,7 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
     html_input = replace_all(second_part, html_input)
     markers = html_input.split('(\w+)')
     path = "driver/chromedriver.exe"
-    binary_path = "driver/chrome-win64/chrome.exe"
+    binary_path = "driver/chrome-test/chrome.exe"
     chrome_options = Options()
     chrome_options.binary_location = binary_path
     chrome_service = Service(executable_path=path)
@@ -143,7 +143,7 @@ def loading(driver,action):
 
 def scrapp_normal_action(url,actionTypeInput,actionInput,xpath):
     path = "driver/chromedriver.exe"
-    binary_path = "driver/chrome-win64/chrome.exe"
+    binary_path = "driver/chrome-test/chrome.exe"
     chrome_options = Options()
     chrome_options.binary_location = binary_path
     chrome_service = Service(executable_path=path)
@@ -236,7 +236,7 @@ def scrapp_deep_action(url,actionTypeInput,actionInput,emailInput,htmlInput,xpat
     htmlInput = replace_all(second_part, htmlInput)
     markers = htmlInput.split('(\w+)')
     path = "driver/chromedriver.exe"
-    binary_path = "driver/chrome-win64/chrome.exe"
+    binary_path = "driver/chrome-test/chrome.exe"
     chrome_options = Options()
     chrome_options.binary_location = binary_path
     chrome_service = Service(executable_path=path)
