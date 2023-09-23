@@ -1,0 +1,6 @@
+pymysql==1.1.0
+openpyxl==3.0.10
+flask==2.3.2
+werkzeug==2.3.6
+requests==2.31.0
+selenium==4.10.0
