@@ -7,7 +7,6 @@ import requests, time
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-import pyautogui
 
 def scroll_down(driver):
     scroll_height = 0
