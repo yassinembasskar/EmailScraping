@@ -87,7 +87,7 @@ def scrapp_deep(url,wanted_email,html_input,xpath):
     chrome_service = Service(executable_path=path)
     driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
     driver.get(url)
-    time.sleep
+    time.sleep(2)
     wait = WebDriverWait(driver, 5) 
     wait.until(EC.presence_of_element_located((By.XPATH, xpath)))
     scroll_down(driver)
